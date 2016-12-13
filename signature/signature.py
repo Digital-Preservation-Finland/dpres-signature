@@ -113,7 +113,7 @@ class ManifestSMIME(object):
 
         (stdout, stderr) = proc.communicate()
 
-        print stdout, stderr
+        return str(stdout), str(stderr)
 
     def write_signature_file(self):
         """ Write SIP signature file varmiste.sig/signature.sig with checksums of all .xml
