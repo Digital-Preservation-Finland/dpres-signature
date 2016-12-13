@@ -12,8 +12,7 @@ import subprocess
 from tests.utils import run_command
 from signature import signature
 
-PRIVATE_KEY = '%s/kdk-pas-sip-signing-key.pem'
-PUBLIC_KEY = '%s/kdk-pas-sip-signing-key.pub'
+KEY = '%s/kdk-pas-sip-signing-key.pem'
 SIP_PATH = '%s/sip'
 FILE_PATH = '%s/sip/file.xml'
 SIGNATURE_PATH = '%s/sip/signature.sig'
@@ -69,8 +68,8 @@ def get_signature(test_path, file_path=None):
     """
     sign = signature.ManifestSMIME(
         signature_filename=SIGNATURE_PATH % test_path,
-        private_key=PRIVATE_KEY % test_path,
-        public_key=PUBLIC_KEY % test_path,
+        private_key=KEY % test_path,
+        public_key=KEY % test_path,
         ca_path=test_path)
     return sign
 
