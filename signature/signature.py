@@ -99,10 +99,7 @@ class ManifestSMIME(object):
             cmd, stdin=subprocess.PIPE,
             stderr=subprocess.PIPE, stdout=subprocess.PIPE,
             close_fds=False, shell=False)
-
         (stdout, stderr) = proc.communicate()
-
-        print stdout, stderr
 
         cmd = ['openssl', 'x509', '-text', '-in', self.public_key]
 
@@ -157,7 +154,6 @@ class ManifestSMIME(object):
 
         algorithm = 'sha1'
         checksum = ipt.fileutils.checksum.BigFile(algorithm)
-        print "matches", matches
         for filename in matches:
 
             hexdigest = checksum.hexdigest(filename)
@@ -175,7 +171,7 @@ class ManifestSMIME(object):
                manifest_filename]
 
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
-        print "SIGN_PATH", sign_path
+
         signature_file = open(sign_path, 'w')
 
         proc = subprocess.Popen(
@@ -183,8 +179,8 @@ class ManifestSMIME(object):
             stderr=subprocess.PIPE, stdout=signature_file,
             close_fds=True, shell=False)
 
-        (stdout, stderr) = proc.communicate()
-        print cmd, proc.returncode, stdout, stderr
+        proc.communicate()
+
         signature_file.close()
 
         # cleanup temporary manifest after everything ready

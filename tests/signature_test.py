@@ -57,10 +57,9 @@ def test_verify_signature_file(testpath):
     hash_path = rehash_ca_path_symlinks(sign)
     sign.public_key = hash_path
     sign.write_signature_file()
-    print_dirs(SIP_PATH % testpath)
-    print_file(SIGNATURE_PATH % testpath)
 
     assert os.path.isfile(sign.signature_file)
+
     sign.verify_signature_file()
 
 
@@ -92,44 +91,8 @@ def rehash_ca_path_symlinks(signature_object):
     difference-between-cacert-and-capath-in-curl """
 
     cmd = ['openssl', 'x509', '-hash', '-noout', '-in', signature_object.public_key]
-    print cmd
-    print_dirs(signature_object.ca_path)
     (stdout, _) = run_command(cmd)
-    print "hash", stdout
     x509_hash_symlink = os.path.join(
         signature_object.ca_path, '%s.0' % stdout.rstrip())
-    print "x509_hash_symlink", x509_hash_symlink
-    print "signature_object.public_key", signature_object.public_key
-    os.system('ls -la ' + os.path.dirname(signature_object.public_key))
-    os.system('ls -la ' + os.path.dirname(x509_hash_symlink))
     os.symlink(signature_object.public_key, x509_hash_symlink)
-    os.system('ls -la ' + os.path.dirname(x509_hash_symlink))
     return x509_hash_symlink
-
-
-def print_dirs(path):
-    """
-    Print print dirs.
-    """
-    print "\nx-------------- START - %s --------------------" % path
-    cmd = ['find "%s" -ls' % (path)]
-    proc = subprocess.Popen(
-        cmd, stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-        close_fds=False, shell=True)
-
-    (stdout, stderr) = proc.communicate()
-    print stdout, stderr
-    print "x-------------- END - %s --------------------" % path
-
-
-def print_file(path):
-    """
-    Print print dirs.
-    """
-    print "\ny-------------- START - %s --------------------" % path
-    file_ = open(path)
-    for line in file_:
-        sys.stdout.write(line)
-    file_.close()
-    print "y-------------- END - %s --------------------" % path
