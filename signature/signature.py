@@ -9,6 +9,11 @@ import fnmatch
 import tempfile
 import ipt.fileutils.checksum
 
+PRIVATE_KEY = \
+    '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pem'
+PUBLIC_KEY = \
+    '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pub'
+
 
 class InvalidSignatureError(Exception):
 
@@ -39,43 +44,23 @@ class ManifestSMIME(object):
     """
     Class for SMIME manifest
     """
-    manifest_base_path = ''
-    target_path = None
-    # These keys are for signing files with systems own keys.
-    # Not to be confused
-    # with users public key used in signature validation.
-    ca_path = '/etc/ssl/certs'
-    private_key = \
-        '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pem'
-    public_key = \
-        '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pub'
-    signature_file = 'signature.sig'
 
-    country = 'FI'
-    state = 'Uusimaa'
-    location = 'Helsinki'
-    common_name = 'ingest.local'
+    def __init__(
+            self, signature_file='signature.sig', ca_path='/etc/ssl/certs',
+            target_path=None, expiry_days='365', country='FI', state='Uusimaa',
+            location='Helsinki', common_name='ingest.local',
+            private_key=PRIVATE_KEY, public_key=PUBLIC_KEY):
 
-    def __init__(self, signature_filename=None, private_key=None,
-                 public_key=None, ca_path=None, target_path=None,
-                 expiry_days='365'):
-
-        if signature_filename:
-            self.signature_file = signature_filename
-        if ca_path:
-            self.ca_path = ca_path
-
-        if private_key:
-            self.private_key = private_key
-
-        if public_key:
-            self.public_key = public_key
-
-        if target_path:
-            self.target_path = target_path
-
+        self.signature_file = signature_file
+        self.ca_path = ca_path
+        self.private_key = private_key
+        self.public_key = public_key
+        self.target_path = target_path
         self.expiry_days = expiry_days
-
+        self.country = country
+        self.state = state
+        self.location = location
+        self.common_name = common_name
         self.manifest_base_path = os.path.abspath(
             os.path.dirname(self.signature_file))
 

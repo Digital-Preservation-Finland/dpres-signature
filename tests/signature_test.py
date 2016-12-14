@@ -127,7 +127,7 @@ def get_signature(test_path, file_path=None, expiry_days='365'):
     utility function for creating signature.
     """
     sign = signature.ManifestSMIME(
-        signature_filename=SIGNATURE_PATH % test_path,
+        signature_file=SIGNATURE_PATH % test_path,
         private_key=KEY % test_path,
         public_key=KEY % test_path,
         ca_path=test_path,
