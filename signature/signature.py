@@ -81,10 +81,10 @@ class ManifestSMIME(object):
                '-newkey', 'rsa:2048', '-subj', '/C=%s/ST=%s/L=%s/CN=%s' % (
                    self.country, self.state, self.location, self.common_name),
                '-keyout', self.private_key, '-out', self.public_key]
-        (ret, stdout, stderr) = run_command(cmd)
+        (_, stdout, stderr) = run_command(cmd)
 
         cmd = ['openssl', 'x509', '-text', '-in', self.public_key]
-        (ret, stdout, stderr) = run_command(cmd)
+        (_, stdout, stderr) = run_command(cmd)
 
         return str(stdout), str(stderr)
 
@@ -143,18 +143,20 @@ class ManifestSMIME(object):
         # Close temporary manifest just before reading it
         os.close(manifest_fh)
 
-        cmd = ['openssl', 'smime', '-sign', '-signer', self.private_key, '-in',
-               manifest_filename]
 
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
-
         signature_file = open(sign_path, 'w')
-        run_command(cmd, stdout=signature_file, close_fds=True)
-
         signature_file.close()
 
         # cleanup temporary manifest after everything ready
         os.remove(manifest_filename)
+        cmd = ['openssl', 'smime', '-sign', '-signer', self.private_key, '-in',
+               manifest_filename]
+        (ret, stdout, stderr) = run_command(
+            cmd, stdout=signature_file, close_fds=True)
+        if ret != 0:
+            raise InvalidSignatureError(INVALID_SIGNATURE_ERROR % (
+                ret, stdout, stderr))
 
     def verify_signature_file(self):
         """ Verify SIP signature varmiste.sig/signature.sig file """
@@ -162,10 +164,8 @@ class ManifestSMIME(object):
         cmd = ['openssl', 'smime', '-verify', '-in',
                os.path.join(self.manifest_base_path, self.signature_file),
                '-CApath', self.ca_path]
-
-        (ret, stdout, stderr) = run_command(
-            cmd, close_fds=True)
-
+        (ret, stdout, stderr) = run_command(cmd, close_fds=True)
+        results = (ret, stdout, stderr)
         # http://www.openssl.org/docs/apps/verify.html
         if ret == 4:
             raise InvalidSignatureError(
