@@ -129,30 +129,20 @@ class ManifestSMIME(object):
             matches = self.target_path.split(',')
             matches = [os.path.abspath(match) for match in matches]
 
-        manifest_fh, manifest_filename = tempfile.mkstemp()
-
+        manifest_fh = tempfile.NamedTemporaryFile()
+        manifest_filename = manifest_fh.name
         algorithm = 'sha1'
         checksum = BigFile(algorithm)
         for filename in matches:
-
             hexdigest = checksum.hexdigest(filename)
             filename_relative = filename[len(self.manifest_base_path) + 1:]
             file_checksum = "%s:%s:%s\n" % (filename_relative, algorithm,
                                             hexdigest)
-
-            os.write(manifest_fh, file_checksum)
-            print file_checksum
-
-        # Close temporary manifest just before reading it
-        os.close(manifest_fh)
-
+            with open(manifest_filename, 'w') as outfile:
+                outfile.write(file_checksum)
 
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
         signature_file = open(sign_path, 'w')
-        signature_file.close()
-
-        # cleanup temporary manifest after everything ready
-        os.remove(manifest_filename)
         cmd = ['openssl', 'smime', '-sign', '-signer', self.private_key, '-in',
                manifest_filename]
         (ret, stdout, stderr) = run_command(
