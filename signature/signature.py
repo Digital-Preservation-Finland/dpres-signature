@@ -92,8 +92,8 @@ class ManifestSMIME(object):
         return str(stdout), str(stderr)
 
     def write_signature_file(self):
-        """ Write SIP signature file varmiste.sig/signature.sig with checksums of all .xml
-        files in manifest_base_path
+        """ Write SIP signature file varmiste.sig/signature.sig with checksums
+        of all .xml files in manifest_base_path
 
         Signature file is formatted as following:
 
