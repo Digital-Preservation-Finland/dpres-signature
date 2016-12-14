@@ -13,6 +13,9 @@ PRIVATE_KEY = \
     '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pem'
 PUBLIC_KEY = \
     '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pub'
+INVALID_SIGNATURE_ERROR = 'Invalid signature on signature file. Exitcode: %s\n%s\n%s'
+SMIME_READ_ERROR = 'Unable to read S/MIME. Exitcode: %s\nStdout: %s\nStderr: %s'
+UNEXPECTED_ERROR = 'Unexpected error: Exitcode: %s\n Stdout: %s\n Stderr: %s'
 
 
 class InvalidSignatureError(Exception):
@@ -168,17 +171,11 @@ class ManifestSMIME(object):
         results = (ret, stdout, stderr)
         # http://www.openssl.org/docs/apps/verify.html
         if ret == 4:
-            raise InvalidSignatureError(
-                'Invalid signature on signature file. Exitcode: %s\n%s\n%s' %
-                (ret, stdout, stderr))
+            raise InvalidSignatureError(INVALID_SIGNATURE_ERROR % results)
         if ret == 2:
-            raise SMIMEReadError(
-                'Unable to read S/MIME. Exitcode: %s\nStdout: %s\nStderr: %s' %
-                (ret, stdout, stderr))
+            raise SMIMEReadError(SMIME_READ_ERROR % results)
         if ret != 0:
-            raise UnexpectedError(
-                'Unexpected error: Exitcode: %s\n Stdout: %s\n Stderr: %s' %
-                (ret, stdout, stderr))
+            raise UnexpectedError(UNEXPECTED_ERROR % results)
 
         # assert stderr.find('Verification successful')  == 0,
         # "Invalid signature on certificate"
