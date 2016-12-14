@@ -57,7 +57,8 @@ class ManifestSMIME(object):
     common_name = 'ingest.local'
 
     def __init__(self, signature_filename=None, private_key=None,
-                 public_key=None, ca_path=None, target_path=None):
+                 public_key=None, ca_path=None, target_path=None,
+                 expiry_days='365'):
 
         if signature_filename:
             self.signature_file = signature_filename
@@ -72,6 +73,8 @@ class ManifestSMIME(object):
 
         if target_path:
             self.target_path = target_path
+
+        self.expiry_days = expiry_days
 
         self.manifest_base_path = os.path.abspath(
             os.path.dirname(self.signature_file))
@@ -89,10 +92,9 @@ class ManifestSMIME(object):
             os.makedirs(os.path.dirname(self.public_key))
 
         # Note, this may not be safe for UTF-8 strings in self.country etc.
-        cmd = ['openssl', 'req', '-x509', '-nodes', '-days', '365', '-newkey',
-               'rsa:2048', '-subj',
-               '/C=%s/ST=%s/L=%s/CN=%s' % (self.country, self.state,
-                                           self.location, self.common_name),
+        cmd = ['openssl', 'req', '-x509', '-nodes', '-days', self.expiry_days,
+               '-newkey', 'rsa:2048', '-subj', '/C=%s/ST=%s/L=%s/CN=%s' % (
+                   self.country, self.state, self.location, self.common_name),
                '-keyout', self.private_key, '-out', self.public_key]
 
         proc = subprocess.Popen(
