@@ -149,7 +149,7 @@ def rehash_ca_path_symlinks(signature_object):
 
     cmd = ['openssl', 'x509', '-hash', '-noout', '-in',
            signature_object.public_key]
-    (stdout, _) = run_command(cmd)
+    (_, stdout, _) = run_command(cmd)
     x509_hash_symlink = os.path.join(
         signature_object.ca_path, '%s.0' % stdout.rstrip())
     os.symlink(signature_object.public_key, x509_hash_symlink)

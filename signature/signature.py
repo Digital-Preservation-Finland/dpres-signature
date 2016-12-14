@@ -3,7 +3,7 @@ This is a module for creating and verifying SMIME certificates and
 signing keys.
 """
 
-import subprocess
+from utils import run_command
 import os
 import fnmatch
 import tempfile
@@ -81,21 +81,10 @@ class ManifestSMIME(object):
                '-newkey', 'rsa:2048', '-subj', '/C=%s/ST=%s/L=%s/CN=%s' % (
                    self.country, self.state, self.location, self.common_name),
                '-keyout', self.private_key, '-out', self.public_key]
-
-        proc = subprocess.Popen(
-            cmd, stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-            close_fds=False, shell=False)
-        (stdout, stderr) = proc.communicate()
+        (ret, stdout, stderr) = run_command(cmd)
 
         cmd = ['openssl', 'x509', '-text', '-in', self.public_key]
-
-        proc = subprocess.Popen(
-            cmd, stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-            close_fds=False, shell=False)
-
-        (stdout, stderr) = proc.communicate()
+        (ret, stdout, stderr) = run_command(cmd)
 
         return str(stdout), str(stderr)
 
@@ -160,13 +149,7 @@ class ManifestSMIME(object):
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
 
         signature_file = open(sign_path, 'w')
-
-        proc = subprocess.Popen(
-            cmd, stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE, stdout=signature_file,
-            close_fds=True, shell=False)
-
-        proc.communicate()
+        run_command(cmd, stdout=signature_file, close_fds=True)
 
         signature_file.close()
 
@@ -180,25 +163,22 @@ class ManifestSMIME(object):
                os.path.join(self.manifest_base_path, self.signature_file),
                '-CApath', self.ca_path]
 
-        proc = subprocess.Popen(
-            cmd, stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-            close_fds=True, shell=False)
+        (ret, stdout, stderr) = run_command(
+            cmd, close_fds=True)
 
-        (stdout, stderr) = proc.communicate()
         # http://www.openssl.org/docs/apps/verify.html
-        if proc.returncode == 4:
+        if ret == 4:
             raise InvalidSignatureError(
                 'Invalid signature on signature file. Exitcode: %s\n%s\n%s' %
-                (proc.returncode, stdout, stderr))
-        if proc.returncode == 2:
+                (ret, stdout, stderr))
+        if ret == 2:
             raise SMIMEReadError(
                 'Unable to read S/MIME. Exitcode: %s\nStdout: %s\nStderr: %s' %
-                (proc.returncode, stdout, stderr))
-        if proc.returncode != 0:
+                (ret, stdout, stderr))
+        if ret != 0:
             raise UnexpectedError(
                 'Unexpected error: Exitcode: %s\n Stdout: %s\n Stderr: %s' %
-                (proc.returncode, stdout, stderr))
+                (ret, stdout, stderr))
 
         # assert stderr.find('Verification successful')  == 0,
         # "Invalid signature on certificate"
