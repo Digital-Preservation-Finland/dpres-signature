@@ -140,16 +140,15 @@ class ManifestSMIME(object):
                                             hexdigest)
             with open(manifest_filename, 'w') as outfile:
                 outfile.write(file_checksum)
-
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
-        signature_file = open(sign_path, 'w')
-        cmd = ['openssl', 'smime', '-sign', '-signer', self.private_key, '-in',
-               manifest_filename]
-        (ret, stdout, stderr) = run_command(
-            cmd, stdout=signature_file, close_fds=True)
-        if ret != 0:
-            raise InvalidSignatureError(INVALID_SIGNATURE_ERROR % (
-                ret, stdout, stderr))
+        with open(sign_path, 'w') as signature_file:
+            cmd = ['openssl', 'smime', '-sign', '-signer', self.private_key,
+                   '-in', manifest_filename]
+            (ret, stdout, stderr) = run_command(
+                cmd, stdout=signature_file, close_fds=True)
+            if ret != 0:
+                raise InvalidSignatureError(INVALID_SIGNATURE_ERROR % (
+                    ret, stdout, stderr))
 
     def verify_signature_file(self):
         """ Verify SIP signature varmiste.sig/signature.sig file """
