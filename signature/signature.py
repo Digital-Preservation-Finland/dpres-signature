@@ -7,7 +7,7 @@ from utils import run_command
 import os
 import fnmatch
 import tempfile
-import ipt.fileutils.checksum
+from ipt.fileutils.checksum import BigFile
 
 PRIVATE_KEY = \
     '/usr/share/information-package-tools/ssl/keys/kdk-pas-sip-signing-key.pem'
@@ -129,7 +129,7 @@ class ManifestSMIME(object):
         manifest_fh, manifest_filename = tempfile.mkstemp()
 
         algorithm = 'sha1'
-        checksum = ipt.fileutils.checksum.BigFile(algorithm)
+        checksum = BigFile(algorithm)
         for filename in matches:
 
             hexdigest = checksum.hexdigest(filename)
