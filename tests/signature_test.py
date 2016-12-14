@@ -3,14 +3,11 @@ This is a test module for SMIME signature files verification.
 """
 
 import os
-import sys
 import pytest
-import tempfile
-import shutil
-import subprocess
 
-from tests.utils import run_command
-from signature.signature import SMIMEReadError, InvalidSignatureError, InvalidChecksumError
+from signature.utils import run_command
+from signature.signature import SMIMEReadError, InvalidSignatureError,\
+    InvalidChecksumError
 from signature import signature
 
 
