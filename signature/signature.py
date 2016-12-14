@@ -166,35 +166,33 @@ class ManifestSMIME(object):
             raise SMIMEReadError(SMIME_READ_ERROR % results)
         if ret != 0:
             raise UnexpectedError(UNEXPECTED_ERROR % results)
+        verify_checksums(results[1], self.manifest_base_path)
 
-        # assert stderr.find('Verification successful')  == 0,
-        # "Invalid signature on certificate"
-        # TODO: Manifest can also be refactored as separate class...
-        checksum = ipt.fileutils.checksum.BigFile('sha1')
-        for line in stdout.splitlines():
-            algorithm, hexdigest, filename = self.parse_manifest_line(line)
-            if not algorithm:
-                continue
-            checksum_ok = checksum.verify_file(
-                os.path.join(self.manifest_base_path, filename),
-                hexdigest)
-            if checksum_ok:
-                print "%s %s %s OK" % (filename, algorithm, hexdigest)
-            else:
-                raise InvalidChecksumError(
-                    "Checksum does not match %s %s %s" %
-                    (algorithm, hexdigest, filename))
 
-    def parse_manifest_line(self, line):
-        """
-        Parsing a line from a manifest file.
-        """
+def verify_checksums(lines, manifest_base_path):
+    """
+    Verify manifest checksums
+    """
+    for algorithm, hexdigest, filename in get_manifest_line(lines):
+        checksum_ok = BigFile('sha1').verify_file(
+            os.path.join(manifest_base_path, filename),
+            hexdigest)
+        if not checksum_ok:
+            raise InvalidChecksumError(
+                "Checksum does not match %s %s %s" %
+                (algorithm, hexdigest, filename))
+        print "%s %s %s OK" % (filename, algorithm, hexdigest)
+
+
+def get_manifest_line(lines):
+    """
+    Parsing a line from a manifest file.
+    """
+    for line in lines.splitlines():
         fields = line.rstrip().split(':')
-
         if len(fields) != 3:
-            return (None, None, None)
+            continue
         filename = fields[0]
         algorithm = fields[1]
         hexdigest = fields[2]
-
-        return (algorithm, hexdigest, filename)
+        yield (algorithm, hexdigest, filename)
