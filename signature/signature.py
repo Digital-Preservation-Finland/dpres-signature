@@ -72,12 +72,9 @@ class ManifestSMIME(object):
 
            http://www.openssl.org/docs/apps/req.html
            http://www.madboa.com/geek/openssl/ """
-
-        if not os.path.exists(os.path.dirname(self.private_key)):
-            os.makedirs(os.path.dirname(self.private_key))
-
-        if not os.path.exists(os.path.dirname(self.public_key)):
-            os.makedirs(os.path.dirname(self.public_key))
+        for path in [self.private_key, self.private_key]:
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
 
         # Note, this may not be safe for UTF-8 strings in self.country etc.
         cmd = ['openssl', 'req', '-x509', '-nodes', '-days', self.expiry_days,
