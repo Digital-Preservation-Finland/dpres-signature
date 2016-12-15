@@ -5,7 +5,6 @@ signing keys.
 
 from utils import run_command
 import os
-import fnmatch
 import tempfile
 from ipt.fileutils.checksum import BigFile
 
@@ -116,19 +115,14 @@ class ManifestSMIME(object):
 
         ------39E2251AA194465CC9D401144063F2D3--
         ### Signature file ends here with newline"""
-
-        matches = self.target_path.split(',')
-        matches = [os.path.abspath(match) for match in matches]
-
         manifest_fh = tempfile.NamedTemporaryFile()
         manifest_filename = manifest_fh.name
         algorithm = 'sha1'
         checksum = BigFile(algorithm)
-        for filename in matches:
-            hexdigest = checksum.hexdigest(filename)
-            filename_relative = filename[len(self.manifest_base_path) + 1:]
-            file_checksum = "%s:%s:%s\n" % (filename_relative, algorithm,
-                                            hexdigest)
+        for abs_, rel_ in abs_rel(self.target_path, self.manifest_base_path):
+            hexdigest = checksum.hexdigest(abs_)
+            file_checksum = "%s:%s:%s\n" % (rel_, algorithm, hexdigest)
+
             with open(manifest_filename, 'w') as outfile:
                 outfile.write(file_checksum)
         sign_path = os.path.join(self.manifest_base_path, self.signature_file)
@@ -157,6 +151,15 @@ class ManifestSMIME(object):
         if ret != 0:
             raise UnexpectedError(UNEXPECTED_ERROR % results)
         verify_checksums(results[1], self.manifest_base_path)
+
+
+def abs_rel(paths_string, manifest_base_path):
+    """
+    Parse paths from one comma separated strin into a list.
+    """
+    paths = [x.strip() for x in paths_string.split(',')]
+    for path in paths:
+        yield os.path.abspath(path), os.path.relpath(path, manifest_base_path)
 
 
 def verify_checksums(lines, manifest_base_path):

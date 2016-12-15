@@ -128,7 +128,8 @@ def get_signature(test_path, file_path=None, expiry_days='365'):
         private_key=KEY % test_path,
         public_key=KEY % test_path,
         ca_path=test_path,
-        expiry_days=expiry_days)
+        expiry_days=expiry_days,
+        target_path=FILE_PATH % test_path)
     return sign
 
 
