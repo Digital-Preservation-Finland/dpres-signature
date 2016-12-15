@@ -117,14 +117,8 @@ class ManifestSMIME(object):
         ------39E2251AA194465CC9D401144063F2D3--
         ### Signature file ends here with newline"""
 
-        matches = []
-        if self.target_path is None:
-            for root, _, filenames in os.walk(self.manifest_base_path):
-                for filename in fnmatch.filter(filenames, '*.xml'):
-                    matches.append(os.path.join(root, filename))
-        else:
-            matches = self.target_path.split(',')
-            matches = [os.path.abspath(match) for match in matches]
+        matches = self.target_path.split(',')
+        matches = [os.path.abspath(match) for match in matches]
 
         manifest_fh = tempfile.NamedTemporaryFile()
         manifest_filename = manifest_fh.name
