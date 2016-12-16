@@ -296,14 +296,14 @@ def test_testify():
     # Verify signature.sig file with another
     # Load the another signing certificates
 
-    x509 = X509.load_cert('.tmp/another_cert.pem')
+    x509 = X509.load_cert('/etc/ssl/certs/server.crt')
     certificate = X509.X509_Stack()
     certificate.push(x509)
     smime.set_x509_stack(certificate)
 
     # Load the another CA cert (same as signing certificate)
     ca_store = X509.X509_Store()
-    ca_store.load_info('.tmp/another_cert.pem')
+    ca_store.load_info('/etc/ssl/certs/ca-bundle.crt')
     smime.set_x509_store(ca_store)
 
     pkcs7, data = SMIME.smime_load_pkcs7('.tmp/signature.sig')
@@ -332,5 +332,18 @@ def test_testify():
 
     # Verify message with another certificate
     pkcs7, data = SMIME.smime_load_pkcs7('.tmp/signature.sig')
+
+    # Load x509 signature / certificate stack from
+    # message itself instead of stored another_key.pem
+    # This corresponds to "openssl smime -verify" functionality
+    certificate_x509 = pkcs7.get0_signers(X509.X509_Stack())
+
+    smime = SMIME.SMIME()
+    smime.set_x509_stack(certificate_x509)
+
+    ca_store = X509.X509_Store()
+    ca_store.load_info('.tmp/another_cert.pem')
+    smime.set_x509_store(ca_store)
+
     verified_message = smime.verify(pkcs7, data)
     assert verified_message == message
