@@ -88,16 +88,12 @@ class Manifest(object):
             manifest.entries.append(FileEntry.from_string(line))
         return manifest
 
-    def to_string(self):
+    def __str__(self):
         """Return string representation of the manifest"""
         lines = []
         for entry in self.entries:
             lines.append(entry.__str__())
         return "\n".join(lines)
-
-    def __str__(self):
-        """Return string representation of the manifest"""
-        return self.to_string()
 
 
 class Subject(object):
@@ -235,7 +231,7 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
         for path in glob.glob(pattern):
             manifest.add_file(path)
 
-    signature = smime_sign(key_path, cert_path, manifest.to_string())
+    signature = smime_sign(key_path, cert_path, manifest)
 
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
