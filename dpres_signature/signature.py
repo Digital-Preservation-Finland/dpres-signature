@@ -142,7 +142,7 @@ class Subject(object):
             self.organization_unit, self.common_name])
 
 
-def write_certificate(key_path, cert_path, subject, expiry_days=1):
+def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     """Create X509 certificate and private key
 
     http://www.openssl.org/docs/apps/req.html
