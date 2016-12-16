@@ -69,26 +69,29 @@ class Manifest(object):
 
     def __init__(self):
         """Initialize the class"""
-        self.manifest = []
+        self.entries = []
 
     def add_file(self, filename):
         """Add file to manifest"""
-        self.manifest.append(FileEntry.from_file(filename))
+        self.entries.append(FileEntry.from_file(filename))
 
     def verify(self):
         """Verify all files in manifest"""
-        for entry in self.manifest:
+        for entry in self.entries:
             entry.verify()
 
-    def from_string(self, manifest_in):
+    @classmethod
+    def from_string(cls, manifest_in):
         """Load manifest from string"""
+        manifest = cls()
         for line in manifest_in.splitlines():
-            self.manifest.append(FileEntry.from_string(line))
+            manifest.entries.append(FileEntry.from_string(line))
+        return manifest
 
     def to_string(self):
         """Return string representation of the manifest"""
         lines = []
-        for entry in self.manifest:
+        for entry in self.entries:
             lines.append(entry.__str__())
         return "\n".join(lines)
 
@@ -221,8 +224,7 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs/ca-budle.crt'):
     """Verify SIP signature files aka. signed manifest files"""
     with open(signature_path) as infile:
         manifest_data = smime_verify(ca_path, infile.read())
-    manifest = Manifest()
-    manifest.from_string(manifest_data)
+    manifest = Manifest.from_string(manifest_data)
     manifest.verify()
 
 
