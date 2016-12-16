@@ -38,6 +38,10 @@ class ChecksumError(Exception):
 class FileEntry(object):
     """Manifest entries"""
 
+    checksum_functions = {
+        'sha1': sha1_hexdigest
+    }
+
     def __init__(self, filename, algorithm, hex_digest):
         """init entry"""
         self.filename = filename
@@ -51,13 +55,19 @@ class FileEntry(object):
         return cls(fields[0], fields[1], fields[3])
 
     @classmethod
-    def from_file(cls, filename, algorithm='shq1'):
+    def from_file(cls, filename, algorithm='sha1'):
         """Read manifest entry from filename"""
-        return cls(filename, algorithm, sha1_hexdigest(filename))
+        entry = cls(filename, algorithm, None)
+        entry.hex_digest = entry.file_hex_digest()
+        return entry
+
+    def file_hex_digest(self):
+        """Return hex_digest from entry file"""
+        return self.checksum_functions[self.algorithm](self.filename)
 
     def verify(self):
         """Verify file checksum"""
-        if self.hex_digest != sha1_hexdigest(self.filename):
+        if self.hex_digest != self.file_hex_digest():
             raise ChecksumError("Checksum mismatch %s" % self.filename)
 
     def __str__(self):
@@ -97,7 +107,12 @@ class Manifest(object):
 
 
 class Subject(object):
-    """Friendly names forX509 subject names"""
+    """Friendly names forX509 subject names
+
+    Note: This is propably unnecessary, because m2crypto and pyopenssl
+    libraries already contain name class, with not that complicated api.
+
+    """
 
     def __init__(self):
         """Setup default name values"""
