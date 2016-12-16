@@ -97,7 +97,49 @@ class Manifest(object):
         return self.to_string()
 
 
-def new_certificate(key_path, cert_path, fields):
+class Subject(object):
+    """Friendly names forX509 subject names"""
+
+    def __init__(self):
+        """Setup default name values"""
+        self.country = 'FI'
+        self.state = 'Uusimaa'
+        self.location = 'Espoo'
+        self.organization = 'ACME org'
+        self.organization_unit = 'ACME unit'
+        self.common_name = 'localhost.local'
+
+    @classmethod
+    def from_x509(cls, x509_subject):
+        """Init from m2crypto X509_Name object"""
+        _cls = cls()
+        _cls.country = x509_subject.C
+        _cls.state = x509_subject.ST
+        _cls.location = x509_subject.L
+        _cls.organization = x509_subject.O
+        _cls.organization_unit = x509_subject.OU
+        _cls.common_name = x509_subject.CN
+        return _cls
+
+    def to_x509(self):
+        """Return m2crypto X509_Name object"""
+        x509_name = X509.X509_Name()
+        x509_name.C = self.country
+        x509_name.ST = self.state
+        x509_name.L = self.location
+        x509_name.O = self.organization
+        x509_name.OU = self.organization_unit
+        x509_name.CN = self.common_name
+        return x509_name
+
+    def __str__(self):
+        """Return string Return subject as string"""
+        return " ".join([
+            self.country, self.state, self.location, self.organization,
+            self.organization_unit, self.common_name])
+
+
+def write_certificate(key_path, cert_path, subject, expiry_days=1):
     """Create X509 certificate and private key
 
     http://www.openssl.org/docs/apps/req.html
@@ -109,15 +151,11 @@ def new_certificate(key_path, cert_path, fields):
     key.generate_key(crypto.TYPE_RSA, 1024)
 
     cert = crypto.X509()
-    cert.get_subject().C = fields["country"]
-    cert.get_subject().ST = fields["state"]
-    cert.get_subject().L = fields["location"]
-    cert.get_subject().O = fields["organization"]
-    cert.get_subject().OU = fields["organization_unit"]
-    cert.get_subject().CN = fields["common_name"]
     cert.set_serial_number(randint(1, 100000000000000))
+    cert.set_subject(subject.to_x509())
     cert.gmtime_adj_notBefore(0)
-    cert.gmtime_adj_notAfter(24*60*60*fields["expiry_days"])
+    cert.gmtime_adj_notAfter(24*60*60*expiry_days)
+
     cert.set_issuer(cert.get_subject())
     cert.set_pubkey(key)
     cert.sign(key, 'sha1')
