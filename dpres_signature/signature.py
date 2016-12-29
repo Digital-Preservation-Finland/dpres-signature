@@ -6,10 +6,10 @@ signing keys.
 import hashlib
 import glob
 from random import randint
+from utils import run_command
 
 from OpenSSL import crypto
 from M2Crypto import BIO, Rand, SMIME
-from M2Crypto import X509
 
 
 def sha1_hexdigest(path):
@@ -106,53 +106,6 @@ class Manifest(object):
         return "\n".join(lines)
 
 
-class Subject(object):
-    """Friendly names forX509 subject names
-
-    Note: This is propably unnecessary, because m2crypto and pyopenssl
-    libraries already contain name class, with not that complicated api.
-
-    """
-
-    def __init__(self):
-        """Setup default name values"""
-        self.country = 'FI'
-        self.state = 'Uusimaa'
-        self.location = 'Espoo'
-        self.organization = 'ACME org'
-        self.organization_unit = 'ACME unit'
-        self.common_name = 'localhost.local'
-
-    @classmethod
-    def from_x509(cls, x509_subject):
-        """Init from m2crypto X509_Name object"""
-        _cls = cls()
-        _cls.country = x509_subject.C
-        _cls.state = x509_subject.ST
-        _cls.location = x509_subject.L
-        _cls.organization = x509_subject.O
-        _cls.organization_unit = x509_subject.OU
-        _cls.common_name = x509_subject.CN
-        return _cls
-
-    def to_x509(self):
-        """Return m2crypto X509_Name object"""
-        x509_name = X509.X509_Name()
-        x509_name.C = self.country
-        x509_name.ST = self.state
-        x509_name.L = self.location
-        x509_name.O = self.organization
-        x509_name.OU = self.organization_unit
-        x509_name.CN = self.common_name
-        return x509_name
-
-    def __str__(self):
-        """Return string Return subject as string"""
-        return " ".join([
-            self.country, self.state, self.location, self.organization,
-            self.organization_unit, self.common_name])
-
-
 def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     """Create X509 certificate and private key
 
@@ -161,24 +114,30 @@ def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     https://pyopenssl.readthedocs.io/en/stable/api/crypto.html#certificates
 
     """
-    key = crypto.PKey()
-    key.generate_key(crypto.TYPE_RSA, 1024)
-
     cert = crypto.X509()
+    cert.get_subject().C = subject['C']
+    cert.get_subject().ST = subject['ST']
+    cert.get_subject().L = subject['L']
+    cert.get_subject().O = subject['O']
+    cert.get_subject().OU = subject['OU']
+    cert.get_subject().CN = subject['CN']
+
     cert.set_serial_number(randint(1, 100000000000000))
-    cert.set_subject(subject.to_x509())
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(24*60*60*expiry_days)
 
     cert.set_issuer(cert.get_subject())
+    key = crypto.PKey()
+    key.generate_key(crypto.TYPE_RSA, 1024)
     cert.set_pubkey(key)
     cert.sign(key, 'sha1')
 
-    with open(cert_path, 'w') as outfile:
-        outfile.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
-
-    with open(key_path, 'w') as outfile:
-        outfile.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+    pub = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+    pem = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
+    for item, path in zip([pub, pem], [key_path, cert_path]):
+        with open(path, 'w') as outfile:
+            outfile.write(item)
+    return pub, pem
 
 
 def smime_sign(cert_path, key_path, message):
@@ -250,3 +209,24 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
 
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
+
+def rehash_ca_path_symlinks(public_key, ca_path):
+    """ Generate symlinks to public keys in ca_path so
+
+    that openssl command can find correct public keys
+
+        openssl verify -CApath <ca_path>
+
+    Symlinks are in format <x509 hash for public key>.0 -> keyfile.pem
+
+    http://www.openssl.org/docs/apps/verify.html
+    http://www.openssl.org/docs/apps/x509.html
+
+    http://stackoverflow.com/questions/9879688/\
+    difference-between-cacert-and-capath-in-curl """
+
+    cmd = ['openssl', 'x509', '-hash', '-noout', '-in', public_key]
+    (_, stdout, _) = run_command(cmd)
+    x509_hash_symlink = os.path.join(ca_path, '%s.0' % stdout.rstrip())
+    os.symlink(public_key, x509_hash_symlink)
+    return x509_hash_symlink
