@@ -8,11 +8,16 @@ from dpres_signature import signature
 import pytest
 
 TESTPATH = '/tmp/signature_test'
-KEY_NAME = 'key.crt'
+CERT_NAME = 'key.crt'
 PEM_NAME = 'key.pem'
 DIR_NAME = 'sip'
 FILENAME = 'tempfile.xml'
 SIGNATURE_NAME = 'signature.sig'
+
+NAME = {
+    'C': 'FI', 'ST': 'Uusimaa', 'L': 'Espoo', 'O': 'ACME org',
+    'OU': 'ACME unit', 'CN': 'localhots.local'
+}
 
 
 def _make_dir(path=""):
@@ -30,11 +35,23 @@ def _make_dir(path=""):
 def _make_file(path=os.path.join(DIR_NAME, FILENAME)):
     """Make file"""
     dir_path = _make_dir(os.path.dirname(path))
-    print "#", dir_path
     full_path = os.path.join(dir_path, os.path.basename(path))
     with open(full_path, 'w') as outfile:
         outfile.write("foo")
     return full_path
+
+
+def _make_certificates(path="certs"):
+    """Create key pair"""
+    directory = _make_dir(path)
+    pem_path = os.path.join(directory, PEM_NAME)
+    cert_path = os.path.join(directory, CERT_NAME)
+    signature.write_new_certificate(
+        key_path=pem_path,
+        cert_path=cert_path,
+        subject=NAME)
+
+    return {"pub": cert_path, "pem": pem_path}
 
 
 def _make_signature(path):
@@ -48,6 +65,7 @@ def _make_signature(path):
         key_path=key_path,
         cert_path=key_path,
         include_patterns=file_path)
+    return
 
 
 @pytest.fixture(scope="session")
@@ -78,11 +96,23 @@ def tempfile(request):
 
     def fin():
         """foo"""
-        shutil.rmtree(TESTPATH)
+        if os.path.exists(TESTPATH):
+            shutil.rmtree(TESTPATH)
 
     request.addfinalizer(fin)
 
     return _filename
+
+
+@pytest.fixture(scope="function")
+def test_certs(request):
+    """Create test certificates."""
+    def fin():
+        """foo"""
+        shutil.rmtree(TESTPATH)
+
+    request.addfinalizer(fin)
+    return _make_certificates("certs")
 
 
 @pytest.fixture(scope="function")
@@ -93,8 +123,19 @@ def valid_signature(request):
 
     def fin():
         """foo"""
-        shutil.rmtree(TESTPATH)
+        if os.path.exists(TESTPATH):
+            shutil.rmtree(TESTPATH)
 
     request.addfinalizer(fin)
 
     return _signature
+
+
+@pytest.fixture(scope="function")
+def x509_name():
+    """Return 509 name with defaults"""
+    def fin():
+        """foo"""
+        pass
+
+    return NAME

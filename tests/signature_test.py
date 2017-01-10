@@ -5,42 +5,41 @@ This is a test module for SMIME signature files verification.
 import os
 import pytest
 
-from OpenSSL.crypto import X509Name, X509
-from signature.signature import SMIMEReadError, InvalidSignatureError,\
-    InvalidChecksumError
-from dpres_signature.signature import write_new_certificate
+from dpres_signature.signature import write_new_certificate, signature_write, \
+    rehash_ca_path_symlinks, signature_verify
 
 KEY = '%s/kdk-pas-sip-signing-key.pem'
 CA_PATH = '%s/kdk-pas-sip-signing-key.crt'
 SIP_PATH = '%s/sip'
 FILE_PATH = '%s/sip/file.xml'
 SIGNATURE_PATH = '%s/sip/signature.sig'
+SIGNATURE_NAME = 'signature.sig'
 
 
-def x509_name():
-    """Return 509 name with defaults
-    """
-    name = {
-        'C': 'FI', 'ST': 'Uusimaa', 'L': 'Espoo', 'O': 'ACME org',
-        'OU': 'ACME unit', 'CN': 'localhots.local'
-    }
-    return name
+def get_signature(file_path, test_certs, filenames):
+    """Create test signature"""
+    signature_path = os.path.join(os.path.dirname(file_path), SIGNATURE_NAME)
+    return signature_write(
+        signature_path, test_certs["pem"],
+        test_certs["pub"],
+        filenames)
 
 
-def test_signature_write(tempfile):
+def test_signature_write(test_certs, tempfile):
     """
     Test for creating report signature succesfully.
     """
-    print tempfile()
+    file_path = tempfile("test.xml")
+    filename = os.path.basename(file_path)
+    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
+    signature = get_signature(file_path, test_certs, [filename])
+    assert "test.xml:sha1:0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a3" in signature
+    assert "/test.xml" not in signature
+    assert os.path.isfile(file_path)
+    assert os.path.isfile(signature_path)
 
-    write_new_certificate()
-    sign.write_signature_file()
 
-    assert os.path.isfile(FILE_PATH % testpath)
-    assert os.path.isfile(SIGNATURE_PATH % testpath)
-
-
-def test_write_new_certificate(tempdir):
+def test_write_new_certificate(tempdir, x509_name):
     """
     Test new key pair creation.
     """
@@ -48,28 +47,25 @@ def test_write_new_certificate(tempdir):
     pub, pem = write_new_certificate(
         key_path=KEY % directory,
         cert_path=CA_PATH % directory,
-        subject=x509_name())
-    print pub
-    print pem
+        subject=x509_name)
     assert os.path.isfile(KEY % directory)
     assert os.path.isfile(CA_PATH % directory)
 
 
-def test_verify_signature_file(valid_signature):
+def test_verify_signature_file(test_certs, tempfile):
     """
     Test verify_signature_file()
     """
-    sign = get_signature(testpath, FILE_PATH % testpath)
-    sign.sip_path = SIP_PATH % testpath
+    file_path = tempfile("test.xml")
+    filename = os.path.basename(file_path)
+    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
+    get_signature(file_path, test_certs, [filename])
+    ca_path = os.path.dirname(test_certs["pem"])
+    rehash_ca_path_symlinks(test_certs["pub"], ca_path)
 
-    sign.new_signing_key()
-    hash_path = rehash_ca_path_symlinks(sign)
-    sign.public_key = hash_path
-    sign.write_signature_file()
+    assert os.path.isfile(signature_path)
 
-    assert os.path.isfile(sign.signature_file)
-
-    sign.verify_signature_file()
+    signature_verify(signature_path=signature_path, ca_path=ca_path)
 
 
 def test_missing_certificate(testpath):
