@@ -3,6 +3,7 @@ This is a module for creating and verifying SMIME certificates and
 signing keys.
 """
 
+import os
 import hashlib
 import glob
 from random import randint
@@ -12,7 +13,7 @@ from OpenSSL import crypto
 from M2Crypto import BIO, Rand, SMIME
 
 
-def sha1_hexdigest(path):
+def sha1_hexdigest(file_path, base_path):
     """Calculate and return SHA1 digest as hexadecimal ASCII representation.
 
     :path: Filename to calculate digest
@@ -20,7 +21,8 @@ def sha1_hexdigest(path):
 
     """
     sha1 = hashlib.sha1()
-    infile = open(path)
+    full_path = os.path.join(base_path, file_path)
+    infile = open(full_path)
     while True:
         buf = infile.read(0x100000)
         if not buf:
@@ -42,28 +44,32 @@ class FileEntry(object):
         'sha1': sha1_hexdigest
     }
 
-    def __init__(self, filename, algorithm, hex_digest):
+    def __init__(self, filename, algorithm, hex_digest, base_path):
         """init entry"""
         self.filename = filename
         self.algorithm = algorithm
         self.hex_digest = hex_digest
+        self.base_path = base_path
 
     @classmethod
-    def from_string(cls, line):
+    def from_string(cls, line, base_path):
         """Parse manifest entry from string"""
         fields = line.rstrip().split(':')
-        return cls(fields[0], fields[1], fields[3])
+        return cls(fields[0], fields[1], fields[3], base_path)
 
     @classmethod
-    def from_file(cls, filename, algorithm='sha1'):
+    def from_file(cls, filename, algorithm='sha1', base_path=None):
         """Read manifest entry from filename"""
-        entry = cls(filename, algorithm, None)
+        entry = cls(
+            filename=filename, algorithm=algorithm,
+            hex_digest=None, base_path=base_path)
         entry.hex_digest = entry.file_hex_digest()
         return entry
 
     def file_hex_digest(self):
         """Return hex_digest from entry file"""
-        return self.checksum_functions[self.algorithm](self.filename)
+        return self.checksum_functions[self.algorithm](
+            self.filename, self.base_path)
 
     def verify(self):
         """Verify file checksum"""
@@ -77,13 +83,15 @@ class FileEntry(object):
 class Manifest(object):
     """Generate and verify manifest files"""
 
-    def __init__(self):
+    def __init__(self, base_path=None):
         """Initialize the class"""
         self.entries = []
+        self.base_path = base_path
 
     def add_file(self, filename):
         """Add file to manifest"""
-        self.entries.append(FileEntry.from_file(filename))
+        self.entries.append(
+            FileEntry.from_file(filename=filename, base_path=self.base_path))
 
     def verify(self):
         """Verify all files in manifest"""
@@ -102,7 +110,7 @@ class Manifest(object):
         """Return string representation of the manifest"""
         lines = []
         for entry in self.entries:
-            lines.append(entry.__str__())
+            lines.append(str(entry))
         return "\n".join(lines)
 
 
@@ -140,7 +148,7 @@ def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     return pub, pem
 
 
-def smime_sign(cert_path, key_path, message):
+def smime_sign(base_path, cert_path, key_path, message):
     """Sign message with given certificate and signing key"""
 
     # Seed the PRNG.
@@ -148,13 +156,16 @@ def smime_sign(cert_path, key_path, message):
 
     # Instantiate an SMIME object; set it up; sign the buffer.
     smime = SMIME.SMIME()
+    os.system("ls -la " + os.path.dirname(key_path))
     smime.load_key(key_path, cert_path)
 
-    message_buf = BIO.MemoryBuffer(message)
+    message_buf = BIO.MemoryBuffer()
+    message_buf.write(str(message))
     pkcs7 = smime.sign(message_buf, SMIME.PKCS7_DETACHED)
 
     # Must recreate message buffer, it was consumed by smime.sign()
-    message_buf = BIO.MemoryBuffer(message)
+    message_buf = BIO.MemoryBuffer()
+    message_buf.write(str(message))
 
     # Destination buffer for combined message
     out = BIO.MemoryBuffer()
@@ -200,15 +211,15 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs/ca-budle.crt'):
 
 def signature_write(signature_path, key_path, cert_path, include_patterns):
     """Generate SIP signature files aka. signed manifest files"""
-    manifest = Manifest()
+    base_path = os.path.dirname(signature_path)
+    manifest = Manifest(base_path)
     for pattern in include_patterns:
-        for path in glob.glob(pattern):
-            manifest.add_file(path)
-
-    signature = smime_sign(key_path, cert_path, manifest)
+        manifest.add_file(pattern)
+    signature = smime_sign(base_path, key_path, cert_path, manifest)
 
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
+    return signature
 
 def rehash_ca_path_symlinks(public_key, ca_path):
     """ Generate symlinks to public keys in ca_path so
