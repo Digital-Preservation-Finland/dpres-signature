@@ -10,7 +10,7 @@ from random import randint
 from utils import run_command
 
 from OpenSSL import crypto
-from M2Crypto import BIO, Rand, SMIME
+from M2Crypto import BIO, Rand, SMIME, X509
 
 
 def sha1_hexdigest(file_path, base_path):
