@@ -115,7 +115,7 @@ class Manifest(object):
         return "\n".join(lines)
 
 
-def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
+def write_new_certificate(public_key_path, cert_path, subject, expiry_days=1):
     """Create X509 certificate and private key
 
     http://www.openssl.org/docs/apps/req.html
@@ -125,22 +125,23 @@ def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     """
     name = mk_ca_issuer(subject)
     req, pk = make_request(1024, name)
-    pkey = req.get_pubkey()
+    public_key = req.get_pubkey()
     cert = X509.X509()
     set_expiry(cert, expiry_days)
     cert.set_serial_number(randint(1, 100000000000000))
 
     cert.set_issuer(name)
-    cert.set_pubkey(pkey)
+    cert.set_pubkey(public_key)
     cert.add_ext(X509.new_extension('basicConstraints', 'CA:TRUE'))
     cert.add_ext(
         X509.new_extension('subjectKeyIdentifier', cert.get_fingerprint()))
     cert.sign(pk, 'sha1')
 
-    for item, path in zip([cert, pkey], [key_path, cert_path]):
-        with open(path, 'w') as outfile:
-            outfile.write(item.as_pem())
-    return cert.as_pem(), pkey.as_pem()
+    with open(public_key_path, 'w') as outfile:
+        outfile.write(public_key.as_pem())
+    with open(cert_path, 'w') as outfile:
+        outfile.write(cert.as_text())
+    return cert.as_text(), public_key.as_pem()
 
 
 def smime_sign(base_path, cert_path, key_path, message):
@@ -254,6 +255,7 @@ def set_expiry(cert, days=365):
     cert.set_not_before(now)
     cert.set_not_after(expire)
 
+
 def mk_ca_issuer(subject):
     """
     Our default CA issuer name.
@@ -266,6 +268,7 @@ def mk_ca_issuer(subject):
     name.OU = subject['OU']
     name.CN = subject['CN']
     return name
+
 
 def make_request(bits, name):
     """

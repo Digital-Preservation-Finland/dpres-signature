@@ -45,11 +45,14 @@ def test_write_new_certificate(tempdir, x509_name):
     """
     directory = tempdir()
     pub, pem = write_new_certificate(
-        key_path=KEY % directory,
+        public_key_path=KEY % directory,
         cert_path=CA_PATH % directory,
         subject=x509_name)
     assert os.path.isfile(KEY % directory)
     assert os.path.isfile(CA_PATH % directory)
+    assert "Issuer: C=FI, ST=Uusimaa, L=Espoo, O=ACME org" in pub
+    assert "CN=localhots.local" in pub
+    assert "Signature Algorithm: sha1WithRSAEncryption" in pub
 
 
 def test_verify_signature_file(test_certs, tempfile):
