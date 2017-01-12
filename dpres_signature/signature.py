@@ -5,12 +5,13 @@ signing keys.
 
 import os
 import hashlib
+import time
 import glob
 from random import randint
 from utils import run_command
 
 from OpenSSL import crypto
-from M2Crypto import BIO, Rand, SMIME, X509
+from M2Crypto import BIO, Rand, SMIME, X509, ASN1, EVP, RSA
 
 
 def sha1_hexdigest(file_path, base_path):
@@ -122,30 +123,24 @@ def write_new_certificate(key_path, cert_path, subject, expiry_days=1):
     https://pyopenssl.readthedocs.io/en/stable/api/crypto.html#certificates
 
     """
-    cert = crypto.X509()
-    cert.get_subject().C = subject['C']
-    cert.get_subject().ST = subject['ST']
-    cert.get_subject().L = subject['L']
-    cert.get_subject().O = subject['O']
-    cert.get_subject().OU = subject['OU']
-    cert.get_subject().CN = subject['CN']
-
+    name = mk_ca_issuer(subject)
+    req, pk = make_request(1024, name)
+    pkey = req.get_pubkey()
+    cert = X509.X509()
+    set_expiry(cert, expiry_days)
     cert.set_serial_number(randint(1, 100000000000000))
-    cert.gmtime_adj_notBefore(0)
-    cert.gmtime_adj_notAfter(24*60*60*expiry_days)
 
-    cert.set_issuer(cert.get_subject())
-    key = crypto.PKey()
-    key.generate_key(crypto.TYPE_RSA, 1024)
-    cert.set_pubkey(key)
-    cert.sign(key, 'sha1')
+    cert.set_issuer(name)
+    cert.set_pubkey(pkey)
+    cert.add_ext(X509.new_extension('basicConstraints', 'CA:TRUE'))
+    cert.add_ext(
+        X509.new_extension('subjectKeyIdentifier', cert.get_fingerprint()))
+    cert.sign(pk, 'sha1')
 
-    pub = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
-    pem = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
-    for item, path in zip([pub, pem], [key_path, cert_path]):
+    for item, path in zip([cert, pkey], [key_path, cert_path]):
         with open(path, 'w') as outfile:
-            outfile.write(item)
-    return pub, pem
+            outfile.write(item.as_pem())
+    return cert.as_pem(), pkey.as_pem()
 
 
 def smime_sign(base_path, cert_path, key_path, message):
@@ -221,6 +216,7 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
         outfile.write(signature)
     return signature
 
+
 def rehash_ca_path_symlinks(public_key, ca_path):
     """ Generate symlinks to public keys in ca_path so
 
@@ -241,3 +237,49 @@ def rehash_ca_path_symlinks(public_key, ca_path):
     x509_hash_symlink = os.path.join(ca_path, '%s.0' % stdout.rstrip())
     os.symlink(public_key, x509_hash_symlink)
     return x509_hash_symlink
+
+
+def set_expiry(cert, days=365):
+    """
+    Make a cert valid from now and til 'days' from now.
+    Args:
+       cert -- cert to make valid
+       days -- number of days cert is valid for from now.
+    """
+    time_now = long(time.time())
+    now = ASN1.ASN1_UTCTIME()
+    now.set_time(time_now)
+    expire = ASN1.ASN1_UTCTIME()
+    expire.set_time(time_now + days * 24 * 60 * 60)
+    cert.set_not_before(now)
+    cert.set_not_after(expire)
+
+def mk_ca_issuer(subject):
+    """
+    Our default CA issuer name.
+    """
+    name = X509.X509_Name()
+    name.C = subject['C']
+    name.ST = subject['ST']
+    name.L = subject['L']
+    name.O = subject['O']
+    name.OU = subject['OU']
+    name.CN = subject['CN']
+    return name
+
+def make_request(bits, name):
+    """
+    Create a X509 request with the given number of bits in they key.
+    Args:
+      bits -- number of RSA key bits
+      cn -- common name in the request
+    Returns a X509 request and the private key (EVP)
+    """
+    pk = EVP.PKey()
+    x = X509.Request()
+    rsa = RSA.gen_key(bits, 65537, lambda: None)
+    pk.assign_rsa(rsa)
+    x.set_pubkey(pk)
+    name = x.set_subject(name)
+    x.sign(pk, 'sha1')
+    return x, pk
