@@ -60,7 +60,7 @@ def test_verify_signature_file(test_certs, tempfile):
     Test verify_signature_file()
     """
     file_path = tempfile("test.xml")
-    filename = os.path.basename(file_path)
+    base_path, filename = os.path.split(file_path)
     signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
     get_signature(file_path, test_certs, [filename])
     ca_path = os.path.dirname(test_certs["pem"])
@@ -68,7 +68,8 @@ def test_verify_signature_file(test_certs, tempfile):
 
     assert os.path.isfile(signature_path)
 
-    signature_verify(signature_path=signature_path, ca_path=ca_path)
+    signature_verify(
+        signature_path=signature_path, ca_path=ca_path, base_path=base_path)
 
 
 def test_missing_certificate(testpath):

@@ -47,7 +47,7 @@ def _make_certificates(path="certs"):
     pem_path = os.path.join(directory, PEM_NAME)
     cert_path = os.path.join(directory, CERT_NAME)
     signature.write_new_certificate(
-        key_path=pem_path,
+        public_key_path=pem_path,
         cert_path=cert_path,
         subject=NAME)
 

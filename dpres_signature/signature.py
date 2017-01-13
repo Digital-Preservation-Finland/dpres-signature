@@ -100,11 +100,12 @@ class Manifest(object):
             entry.verify()
 
     @classmethod
-    def from_string(cls, manifest_in):
+    def from_string(cls, manifest_in, base_path):
         """Load manifest from string"""
         manifest = cls()
         for line in manifest_in.splitlines():
-            manifest.entries.append(FileEntry.from_string(line))
+            manifest.entries.append(
+                FileEntry.from_string(line, base_path=base_path))
         return manifest
 
     def __str__(self):
@@ -144,7 +145,7 @@ def write_new_certificate(public_key_path, cert_path, subject, expiry_days=1):
     return cert.as_text(), public_key.as_pem()
 
 
-def smime_sign(base_path, cert_path, key_path, message):
+def smime_sign(cert_path, key_path, message):
     """Sign message with given certificate and signing key"""
 
     # Seed the PRNG.
@@ -197,11 +198,12 @@ def smime_verify(ca_path, message):
     return smime.verify(pkcs7, data)
 
 
-def signature_verify(signature_path, ca_path='/etc/ssl/certs/ca-budle.crt'):
+def signature_verify(
+        signature_path, ca_path='/etc/ssl/certs/ca-budle.crt', base_path=None):
     """Verify SIP signature files aka. signed manifest files"""
     with open(signature_path) as infile:
         manifest_data = smime_verify(ca_path, infile.read())
-    manifest = Manifest.from_string(manifest_data)
+    manifest = Manifest.from_string(manifest_data, base_path)
     manifest.verify()
 
 
@@ -211,7 +213,7 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
     manifest = Manifest(base_path)
     for pattern in include_patterns:
         manifest.add_file(pattern)
-    signature = smime_sign(base_path, key_path, cert_path, manifest)
+    signature = smime_sign(key_path, cert_path, manifest)
 
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
