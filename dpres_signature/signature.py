@@ -10,7 +10,6 @@ import glob
 from random import randint
 from utils import run_command
 
-from OpenSSL import crypto
 from M2Crypto import BIO, Rand, SMIME, X509, ASN1, EVP, RSA
 
 
