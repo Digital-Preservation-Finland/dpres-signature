@@ -153,7 +153,6 @@ def smime_sign(cert_path, key_path, message):
 
     # Instantiate an SMIME object; set it up; sign the buffer.
     smime = SMIME.SMIME()
-    os.system("ls -la " + os.path.dirname(key_path))
     smime.load_key(key_path, cert_path)
 
     message_buf = BIO.MemoryBuffer()
