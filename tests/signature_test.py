@@ -72,14 +72,16 @@ def test_verify_signature_file(test_certs, tempfile):
         signature_path=signature_path, ca_path=ca_path, base_path=base_path)
 
 
-def test_missing_certificate(testpath):
+def test_missing_certificate(test_certs, tempfile):
     """
     Test missing certificate
     """
-    sign = get_signature(testpath, FILE_PATH % testpath)
-    sign.new_signing_key()
-    with pytest.raises(SMIMEReadError):
-        sign.verify_signature_file()
+    signature_path = os.path.join(os.path.dirname(tempfile), 'foo.sig')
+    tempfile("test.xml")
+    ca_path = os.path.dirname(test_certs["pem"])
+    with pytest.raises(OSError):
+        signature_verify(
+            signature_path=signature_path, ca_path=ca_path)
 
 
 def test_invalid_certificate(testpath):
