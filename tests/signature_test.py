@@ -44,7 +44,7 @@ def test_write_new_certificate(tempdir, x509_name):
     Test new key pair creation.
     """
     directory = tempdir()
-    pub, pem = write_new_certificate(
+    pub, _ = write_new_certificate(
         public_key_path=KEY % directory,
         cert_path=CA_PATH % directory,
         subject=x509_name)
