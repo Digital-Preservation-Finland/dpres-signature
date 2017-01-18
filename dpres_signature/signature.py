@@ -123,25 +123,22 @@ def write_new_certificate(public_key_path, cert_path, subject, expiry_days=1):
     https://pyopenssl.readthedocs.io/en/stable/api/crypto.html#certificates
 
     """
+
+    print "Generating a 1024 bit private/public key pair..."
+    rsa = RSA.gen_key(1024, 65537, lambda: None)
+
+    public_key = EVP.PKey()
+    public_key.assign_rsa(rsa)
     name = mk_ca_issuer(subject)
-    req, pk = make_request(1024, name)
-    public_key = req.get_pubkey()
     cert = X509.X509()
     set_expiry(cert, expiry_days)
     cert.set_serial_number(randint(1, 100000000000000))
 
     cert.set_issuer(name)
     cert.set_pubkey(public_key)
-    cert.add_ext(X509.new_extension('basicConstraints', 'CA:TRUE'))
-    cert.add_ext(
-        X509.new_extension('subjectKeyIdentifier', cert.get_fingerprint()))
-    cert.sign(pk, 'sha1')
-
-    with open(public_key_path, 'w') as outfile:
-        outfile.write(public_key.as_pem())
-    with open(cert_path, 'w') as outfile:
-        outfile.write(cert.as_text())
-    return cert.as_text(), public_key.as_pem()
+    cert.sign(public_key, 'sha1')
+    public_key.save_key(public_key_path, cipher=None)
+    cert.save(cert_path)
 
 
 def smime_sign(key_path, cert_path, message):
