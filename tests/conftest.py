@@ -8,8 +8,8 @@ from dpres_signature import signature
 import pytest
 
 TESTPATH = '/tmp/signature_test'
-CERT_NAME = 'key.crt'
-PEM_NAME = 'key.pem'
+CERT_NAME = 'private.crt'
+PUBLIC_KEY_NAME = 'public.pem'
 DIR_NAME = 'sip'
 FILENAME = 'tempfile.xml'
 SIGNATURE_NAME = 'signature.sig'
@@ -44,7 +44,7 @@ def _make_file(path=os.path.join(DIR_NAME, FILENAME)):
 def _make_certificates(path="certs"):
     """Create key pair"""
     directory = _make_dir(path)
-    pem_path = os.path.join(directory, PEM_NAME)
+    pem_path = os.path.join(directory, PUBLIC_KEY_NAME)
     cert_path = os.path.join(directory, CERT_NAME)
     signature.write_new_certificate(
         public_key_path=pem_path,
@@ -57,7 +57,7 @@ def _make_certificates(path="certs"):
 def _make_signature(path):
     """Create signature"""
     file_path = _make_file(path)
-    key_path = os.path.join(_make_dir(), PEM_NAME)
+    key_path = os.path.join(_make_dir(), PUBLIC_KEY_NAME)
     signature_path = os.path.join(
         os.path.dirname(file_path), SIGNATURE_NAME)
     signature.signature_write(
