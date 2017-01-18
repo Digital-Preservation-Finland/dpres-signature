@@ -144,7 +144,7 @@ def write_new_certificate(public_key_path, cert_path, subject, expiry_days=1):
     return cert.as_text(), public_key.as_pem()
 
 
-def smime_sign(cert_path, key_path, message):
+def smime_sign(key_path, cert_path, message):
     """Sign message with given certificate and signing key"""
 
     # Seed the PRNG.
@@ -152,7 +152,9 @@ def smime_sign(cert_path, key_path, message):
 
     # Instantiate an SMIME object; set it up; sign the buffer.
     smime = SMIME.SMIME()
-    smime.load_key(key_path, cert_path)
+    smime.load_key(
+        keyfile=key_path,
+        certfile=cert_path)
 
     message_buf = BIO.MemoryBuffer()
     message_buf.write(str(message))
@@ -268,21 +270,3 @@ def mk_ca_issuer(subject):
     name.OU = subject['OU']
     name.CN = subject['CN']
     return name
-
-
-def make_request(bits, name):
-    """
-    Create a X509 request with the given number of bits in they key.
-    Args:
-      bits -- number of RSA key bits
-      cn -- common name in the request
-    Returns a X509 request and the private key (EVP)
-    """
-    pk = EVP.PKey()
-    x = X509.Request()
-    rsa = RSA.gen_key(bits, 65537, lambda: None)
-    pk.assign_rsa(rsa)
-    x.set_pubkey(pk)
-    name = x.set_subject(name)
-    x.sign(pk, 'sha1')
-    return x, pk
