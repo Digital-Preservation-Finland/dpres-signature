@@ -81,7 +81,7 @@ def tempdir(request):
 
     def fin():
         """remove temporary path"""
-        shutil.rmtree(TESTPATH)
+        rm_temp_dir()
 
     request.addfinalizer(fin)
 
@@ -96,8 +96,7 @@ def tempfile(request):
 
     def fin():
         """foo"""
-        if os.path.exists(TESTPATH):
-            shutil.rmtree(TESTPATH)
+        rm_temp_dir()
 
     request.addfinalizer(fin)
 
@@ -109,7 +108,7 @@ def test_certs(request):
     """Create test certificates."""
     def fin():
         """foo"""
-        shutil.rmtree(TESTPATH)
+        rm_temp_dir()
 
     request.addfinalizer(fin)
     return _make_certificates("certs")
@@ -123,8 +122,7 @@ def valid_signature(request):
 
     def fin():
         """foo"""
-        if os.path.exists(TESTPATH):
-            shutil.rmtree(TESTPATH)
+        rm_temp_dir()
 
     request.addfinalizer(fin)
 
@@ -139,3 +137,9 @@ def x509_name():
         pass
 
     return NAME
+
+
+def rm_temp_dir():
+    """remove temp direcgtory if it exists."""
+    if os.path.exists(TESTPATH):
+        shutil.rmtree(TESTPATH)
