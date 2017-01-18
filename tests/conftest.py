@@ -68,7 +68,7 @@ def _make_signature(path):
     return
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def tempdir(request):
     """Creates temporary directory and clean up after testing.
 
@@ -88,7 +88,7 @@ def tempdir(request):
     return _makedir
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def tempfile(request):
     """Create temp directory"""
     def _filename(path=DIR_NAME):
