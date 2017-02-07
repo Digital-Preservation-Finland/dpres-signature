@@ -79,15 +79,15 @@ def test_missing_certificate(test_certs, tempfile):
     """
     Test missing certificate
     """
-    signature_path = os.path.join(os.path.dirname(tempfile), 'foo.sig')
-    tempfile("test.xml")
+    file_path = tempfile("test.xml")
+    signature_path = os.path.join(os.path.dirname(file_path), 'foo.sig')
     ca_path = os.path.dirname(test_certs["pem"])
-    with pytest.raises(OSError):
+    with pytest.raises(IOError):
         signature_verify(
             signature_path=signature_path, ca_path=ca_path)
 
 
-def test_invalid_certificate(testpath):
+def test_invalid_certificate(test_certs, tempfile):
     """
     Test invalid certificate
     """
@@ -102,22 +102,22 @@ def test_invalid_certificate(testpath):
         sign.verify_signature_file()
 
 
-def test_expired_certificate(testpath):
+def test_expired_certificate(test_certs, tempfile):
     """
     Test expired certificate
     """
-    sign = get_signature(
-        testpath, FILE_PATH % testpath, expiry_days='-1')
-    sign.sip_path = SIP_PATH % testpath
+    file_path = tempfile("test.xml")
+    base_path, filename = os.path.split(file_path)
+    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
+    get_signature(file_path, test_certs, [filename])
+    ca_path = os.path.dirname(test_certs["pem"])
+    rehash_ca_path_symlinks(test_certs["pub"], ca_path)
 
-    sign.new_signing_key()
-    hash_path = rehash_ca_path_symlinks(sign)
-    sign.public_key = hash_path
-    sign.write_signature_file()
+    assert os.path.isfile(signature_path)
 
-    assert os.path.isfile(sign.signature_file)
-    with pytest.raises(InvalidSignatureError):
-        sign.verify_signature_file()
+    signature_verify(
+        signature_path=signature_path, ca_path=ca_path, base_path=base_path)
+
 
 
 def test_altered_file(testpath):
