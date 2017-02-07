@@ -2,3 +2,4 @@
 .cache
 .tmp
 __pycache__
+*.sw?

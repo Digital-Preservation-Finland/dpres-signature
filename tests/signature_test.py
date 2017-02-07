@@ -1,135 +1,105 @@
-"""
-This is a test module for SMIME signature files verification.
-"""
+"""This is a test module for SMIME signature files verification."""
 
 import os
+
 import pytest
 
-from dpres_signature.signature import write_new_certificate, signature_write, \
-    rehash_ca_path_symlinks, signature_verify
+from M2Crypto import SMIME
 
-KEY = '%s/kdk-pas-sip-signing-key.pem'
-CA_PATH = '%s/kdk-pas-sip-signing-key.crt'
-SIP_PATH = '%s/sip'
-FILE_PATH = '%s/sip/file.xml'
-SIGNATURE_PATH = '%s/sip/signature.sig'
-SIGNATURE_NAME = 'signature.sig'
+from dpres_signature.signature import signature_verify
+from dpres_signature.manifest import ManifestError
+
+from tests.conftest import write_signature
 
 
-def get_signature(file_path, test_certs, filenames):
-    """Create test signature"""
-    signature_path = os.path.join(os.path.dirname(file_path), SIGNATURE_NAME)
-    return signature_write(
-        signature_path, test_certs["pem"],
-        test_certs["pub"],
-        filenames)
+def run_verify(signature_fx):
+    """Run the verify command"""
 
-
-def test_signature_write(test_certs, tempfile):
-    """
-    Test for creating report signature succesfully.
-    """
-    file_path = tempfile("test.xml")
-    filename = os.path.basename(file_path)
-    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
-    signature = get_signature(file_path, test_certs, [filename])
-    assert "test.xml:sha1:0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a3" in signature
-    assert "/test.xml" not in signature
-    assert os.path.isfile(file_path)
-    assert os.path.isfile(signature_path)
-
-
-def test_write_new_certificate(tempdir, x509_name):
-    """
-    Test new key pair creation.
-    """
-    directory = tempdir()
-    write_new_certificate(
-        public_key_path=KEY % directory,
-        cert_path=CA_PATH % directory,
-        subject=x509_name)
-    assert os.path.isfile(KEY % directory)
-    assert os.path.isfile(CA_PATH % directory)
-
-    with open(KEY % directory) as infile:
-        pub = infile.read()
-    #assert "Issuer: C=FI, ST=Uusimaa, L=Espoo, O=ACME org" in pub
-    #assert "CN=localhots.local" in pub
-    #assert "Signature Algorithm: sha1WithRSAEncryption" in pub
-
-
-def test_verify_signature_file(test_certs, tempfile):
-    """
-    Test verify_signature_file()
-    """
-    file_path = tempfile("test.xml")
-    base_path, filename = os.path.split(file_path)
-    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
-    get_signature(file_path, test_certs, [filename])
-    ca_path = os.path.dirname(test_certs["pem"])
-    rehash_ca_path_symlinks(test_certs["pub"], ca_path)
-
-    assert os.path.isfile(signature_path)
+    signature_path = str(signature_fx.join('data/signature.sig'))
+    ca_path = str(signature_fx.join('certs'))
 
     signature_verify(
-        signature_path=signature_path, ca_path=ca_path, base_path=base_path)
+        signature_path=signature_path,
+        ca_path=ca_path)
 
 
-def test_missing_certificate(test_certs, tempfile):
-    """
-    Test missing certificate
-    """
-    file_path = tempfile("test.xml")
-    signature_path = os.path.join(os.path.dirname(file_path), 'foo.sig')
-    ca_path = os.path.dirname(test_certs["pem"])
-    with pytest.raises(IOError):
-        signature_verify(
-            signature_path=signature_path, ca_path=ca_path)
+def test_signature(signature_fx):
+    """Test signature contents"""
+
+    signature = signature_fx.join("data/signature.sig").read()
+
+    assert 'MIME-Version: 1.0' in signature
+    assert 'Content-Type: multipart/signed; protocol="application' in signature
+    assert 'This is an S/MIME signed message' in signature
+
+    assert "test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e420" in signature
+    assert "/test.txt" not in signature
+
+    assert 'Content-Type: application/x-pkcs7-signature; name="sm' in signature
+    assert 'Content-Transfer-Encoding: base64' in signature
+    assert 'Content-Disposition: attachment; filename="smime.p7s"' in signature
 
 
-def test_invalid_certificate(test_certs, tempfile):
-    """
-    Test invalid certificate
-    """
-    sign = get_signature(testpath, FILE_PATH % testpath)
-    sign.new_signing_key()
-    sign.write_signature_file()
-    with open(sign.signature_file, 'r+b') as outfile:
+def test_keypair(signature_fx):
+    """Test new key pair creation."""
+
+    key_data = signature_fx.join('keys/rsa_keypair.key').read()
+
+    assert '-----BEGIN PRIVATE KEY-----' in key_data
+    assert '-----END PRIVATE KEY-----' in key_data
+
+
+def test_certificate(signature_fx):
+    """Test new key pair creation."""
+
+    certificate = signature_fx.join('certs/68b140ba.0').read()
+
+    assert '-----BEGIN CERTIFICATE-----' in certificate
+    assert '-----END CERTIFICATE-----' in certificate
+
+
+def test_verify_signature_file(signature_fx):
+    """Test good signature file"""
+
+    run_verify(signature_fx)
+
+
+def test_missing_ca(signature_fx):
+    """Test missing CA certificate / unknown self-signed certificate on
+    signature"""
+
+    os.unlink(str(signature_fx.join('certs/68b140ba.0')))
+    with pytest.raises(SMIME.PKCS7_Error):
+        run_verify(signature_fx)
+
+
+def test_corrupted_signature(signature_fx):
+    """Test corrupted certificate file"""
+
+    signature = signature_fx.join('data/signature.sig')
+    with signature.open('r+b') as outfile:
         outfile.seek(600, 0)
         outfile.write('foo')
-    rehash_ca_path_symlinks(sign)
-    with pytest.raises(SMIMEReadError):
-        sign.verify_signature_file()
+
+    with pytest.raises(SMIME.SMIME_Error):
+        run_verify(signature_fx)
 
 
-def test_expired_certificate(test_certs, tempfile):
-    """
-    Test expired certificate
-    """
-    file_path = tempfile("test.xml")
-    base_path, filename = os.path.split(file_path)
-    signature_path = os.path.join(os.path.dirname(file_path), "signature.sig")
-    get_signature(file_path, test_certs, [filename])
-    ca_path = os.path.dirname(test_certs["pem"])
-    rehash_ca_path_symlinks(test_certs["pub"], ca_path)
+def test_corrupted_file(signature_fx):
+    """ Test invalid certificate """
 
-    assert os.path.isfile(signature_path)
+    signed_file = signature_fx.join('data/test.txt')
 
-    signature_verify(
-        signature_path=signature_path, ca_path=ca_path, base_path=base_path)
-
-
-
-def test_altered_file(testpath):
-    """
-    Test invalid certificate
-    """
-    sign = get_signature(testpath, FILE_PATH % testpath)
-    sign.new_signing_key()
-    sign.write_signature_file()
-    with open(FILE_PATH % testpath, 'r+b') as outfile:
+    with signed_file.open('r+b') as outfile:
         outfile.seek(600, 0)
         outfile.write('foo')
-    rehash_ca_path_symlinks(sign)
-    with pytest.raises(InvalidChecksumError):
-        sign.verify_signature_file()
+
+    with pytest.raises(ManifestError):
+        run_verify(signature_fx)
+
+
+def test_expired_certificate(tmpdir):
+    """Test expired certificate"""
+    write_signature(tmpdir, -1)
+    with pytest.raises(SMIME.PKCS7_Error):
+        run_verify(tmpdir)
