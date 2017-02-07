@@ -3,3 +3,8 @@
 .tmp
 __pycache__
 *.sw?
+.coverage
+.venv/
+coverage.xml
+htmlcov/
+junit.xml
