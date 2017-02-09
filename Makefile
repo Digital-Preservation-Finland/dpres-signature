@@ -6,7 +6,6 @@ install:
 	# Cleanup temporary files
 	rm -f INSTALLED_FILES
 
-	# write version module
 	python version.py > "dpres_signature/version.py"
 
 	# Use Python setuptools
@@ -29,8 +28,7 @@ clean: clean-rpm
 clean-rpm:
 	rm -rf rpmbuild
 
-rpm:
-	rpm: clean-rpm
+rpm: clean-rpm
 	create-archive.sh
 	preprocess-spec-m4-macros.sh include/rhel6
 	build-rpm.sh ${MOCK_CONFIG}
