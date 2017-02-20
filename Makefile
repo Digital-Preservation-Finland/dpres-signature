@@ -2,9 +2,6 @@ ROOT=/
 PREFIX=/usr
 
 install:
-	# Cleanup temporary files
-	rm -f INSTALLED_FILES
-
 	python version.py > "dpres_signature/version.py"
 
 	# Use Python setuptools
@@ -25,6 +22,8 @@ clean: clean-rpm
 	find . -iname '__pycache__' -exec rm -rf '{}' \; | true
 
 clean-rpm:
+	# Cleanup temporary files
+	rm -f INSTALLED_FILES
 	rm -rf rpmbuild
 
 rpm: clean-rpm
