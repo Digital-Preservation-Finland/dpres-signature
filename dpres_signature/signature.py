@@ -8,13 +8,15 @@ from dpres_signature.manifest import Manifest, ManifestError
 
 def signature_verify(signature_path, ca_path='/etc/ssl/certs'):
     """Verify SMIME/X509 signed manifest"""
-
+    if not os.path.isfile(signature_path):
+        return 117
     with open(signature_path) as infile:
         manifest_data = smime_verify(ca_path, infile.read())
 
     base_path = os.path.dirname(signature_path)
     manifest = Manifest.from_string(manifest_data, base_path)
     manifest.verify()
+    return 0
 
 
 def signature_write(signature_path, key_path, cert_path, include_patterns):
@@ -32,3 +34,4 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
 
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
+    return 0

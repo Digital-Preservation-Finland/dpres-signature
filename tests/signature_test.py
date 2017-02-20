@@ -18,7 +18,7 @@ def run_verify(signature_fx):
     signature_path = str(signature_fx.join('data/signature.sig'))
     ca_path = str(signature_fx.join('certs'))
 
-    signature_verify(
+    return signature_verify(
         signature_path=signature_path,
         ca_path=ca_path)
 
@@ -102,3 +102,10 @@ def test_expired_certificate(tmpdir):
     write_signature(tmpdir, -1)
     with pytest.raises(SMIME.PKCS7_Error):
         run_verify(tmpdir)
+
+
+def test_missing_signature(signature_fx):
+    """Test for missing signature."""
+    signature = str(signature_fx.join('data/signature.sig'))
+    os.remove(signature)
+    assert run_verify(signature_fx) == 117
