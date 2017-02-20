@@ -50,20 +50,14 @@ def parse_arguments(arguments):
         metavar="KEYPATH",
         help=("Path to private key"))
     parser.add_argument(
-        "-s", "--signaturepath",
+        "-s", "--signature-path",
         default=None,
         metavar="SIGNATUREPATH",
         help=("Signature path"))
-    parser.add_argument(
-        "-w", "--write",
-        default=None,
-        metavar="WRITE",
-        help=("If True, then write signature file."
-              " If false, verify given signature"))
 
     args = parser.parse_args(arguments[1:])
-    if args.targets == [] and args.write is not None:
-        raise RuntimeError("Missing argument(s): targets")
+    if args.key_path is None or args.signature_path is None:
+        raise RuntimeError("Missing arguments %s" % args)
     return args
 
 
@@ -72,17 +66,11 @@ def main(arguments):
     if arguments is None:
         arguments = sys.argv
     args = parse_arguments(arguments)
-    if args.write != "" and args.write is not None:
-        return dpres_signature.signature.signature_write(
-            signature_path=args.signaturepath,
-            key_path=args.key_path,
-            cert_path=args.ca_path,
-            include_patterns=args.targets)
-    else:
-        return dpres_signature.signature.signature_verify(
-            signature_path=args.signaturepath,
-            ca_path=args.ca_path)
-    return dpres_signature.signature.signature_verify(args)
+    return dpres_signature.signature.signature_write(
+        signature_path=args.signature_path,
+        key_path=args.key_path,
+        cert_path=args.ca_path,
+        include_patterns=args.targets)
 
 
 if __name__ == '__main__':
