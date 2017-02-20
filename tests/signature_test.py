@@ -32,8 +32,7 @@ def test_signature(signature_fx):
     assert 'Content-Type: multipart/signed; protocol="application' in signature
     assert 'This is an S/MIME signed message' in signature
 
-    assert "test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e420" in signature
-    assert "/test.txt" not in signature
+    assert "dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e" in signature
 
     assert 'Content-Type: application/x-pkcs7-signature; name="sm' in signature
     assert 'Content-Transfer-Encoding: base64' in signature
@@ -88,7 +87,7 @@ def test_corrupted_signature(signature_fx):
 def test_corrupted_file(signature_fx):
     """ Test invalid certificate """
 
-    signed_file = signature_fx.join('data/test.txt')
+    signed_file = signature_fx.join('data/dir/test.txt')
 
     with signed_file.open('r+b') as outfile:
         outfile.seek(600, 0)

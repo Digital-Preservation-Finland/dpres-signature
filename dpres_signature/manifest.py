@@ -1,5 +1,7 @@
 """Write and verify manifest files"""
 
+import os
+
 from dpres_signature.checksum import sha1_hexdigest
 
 
@@ -43,8 +45,10 @@ class FileEntry(object):
 
     def file_hex_digest(self):
         """Return hex_digest from entry file"""
-        return self.checksum_functions[self.algorithm](
-            self.filename, self.base_path)
+        path = os.path.join(self.base_path, self.filename)
+        if path.find("..") != -1:
+            raise ManifestError("Path %s is illegal" % path)
+        return self.checksum_functions[self.algorithm](path)
 
     def verify(self):
         """Verify file checksum"""

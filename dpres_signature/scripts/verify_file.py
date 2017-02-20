@@ -45,7 +45,6 @@ def main(arguments):
     """main."""
     if arguments is None:
         arguments = sys.argv
-    print "ARGS", arguments
     args = parse_arguments(arguments)
     return dpres_signature.signature.signature_verify(
         signature_path=args.signature_path,

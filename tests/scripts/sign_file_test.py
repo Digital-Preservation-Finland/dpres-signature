@@ -3,6 +3,7 @@ import os
 
 from pytest import raises
 from dpres_signature.scripts.sign_file import parse_arguments, main
+from dpres_signature.manifest import ManifestError
 
 
 def test_parse_arguments():
@@ -24,5 +25,21 @@ def test_main_write(signature_fx):
     key_path = os.path.join(str(signature_fx), 'keys/rsa_keypair.key')
     cert_path = os.path.join(str(signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
-    main(['foo.py', 'test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
+    main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])
+
+
+def test_illegal_path(signature_fx):
+    """Test illegal paths, prevent script escaping from signature directory."""
+    signature_path = os.path.join(str(signature_fx), 'data/signature.sig')
+    key_path = os.path.join(str(signature_fx), 'keys/rsa_keypair.key')
+    cert_path = os.path.join(str(signature_fx), 'certs/68b140ba.0')
+    os.remove(signature_path)
+    with raises(ManifestError):
+        main(
+            ['foo.py', '../test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
+             '-s=%s' % signature_path])
+    with raises(ManifestError):
+        main(
+            ['foo.py', cert_path, '-c=%s' % cert_path, '-k=%s' % key_path,
+             '-s=%s' % signature_path])

@@ -1,7 +1,7 @@
 """conftest.py"""
 
 import logging
-
+import os
 import shutil
 
 import pytest
@@ -38,7 +38,8 @@ def write_signature(tmpdir, expiry_days=0):
 
     tmpdir.mkdir('data')
     signature_path = str(tmpdir.join('data/signature.sig'))
-    signed_file_path = str(tmpdir.join('data/test.txt'))
+    signed_file_path = str(tmpdir.join('data/dir/test.txt'))
+    signed_file_dir = str(tmpdir.join('data/dir'))
 
     write_new_certificate(
         public_key_path=key_path,
@@ -46,6 +47,8 @@ def write_signature(tmpdir, expiry_days=0):
         subject=subject,
         expiry_days=expiry_days)
 
+    if not os.path.exists(signed_file_dir):
+        os.mkdir(signed_file_dir)
     with open(signed_file_path, 'w') as outfile:
         outfile.write('Sign me!')
 
@@ -53,6 +56,6 @@ def write_signature(tmpdir, expiry_days=0):
         signature_path=signature_path,
         key_path=key_path,
         cert_path=cert_path,
-        include_patterns=['test.txt'])
+        include_patterns=['dir/test.txt'])
 
     return tmpdir
