@@ -3,7 +3,7 @@
 """
 Verify digital signature file for a file(s) with command::
 
-    verify-file <signture_path> [rsa-public-key.pem]
+    verify-signed-file <signture_path> [rsa-public-key.pem]
 
 To verify digital signature you need valid RSA public key. Filename to public
 key is passed as command line parameter.

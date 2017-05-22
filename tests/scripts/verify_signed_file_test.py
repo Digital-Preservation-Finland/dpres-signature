@@ -2,7 +2,7 @@
 import os
 
 from pytest import raises
-from dpres_signature.scripts.verify_file import parse_arguments, main
+from dpres_signature.scripts.verify_signed_file import parse_arguments, main
 
 
 def test_parse_arguments():
