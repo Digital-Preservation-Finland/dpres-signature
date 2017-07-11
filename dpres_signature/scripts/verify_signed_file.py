@@ -41,7 +41,7 @@ def parse_arguments(arguments):
     return args
 
 
-def main(arguments):
+def main(arguments=None):
     """main."""
     if arguments is None:
         arguments = sys.argv
