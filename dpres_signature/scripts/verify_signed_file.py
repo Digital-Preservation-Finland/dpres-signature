@@ -32,6 +32,7 @@ def parse_arguments(arguments):
         help=("Signature files full path"))
     parser.add_argument(
         "-k", "--key-path",
+        default="/etc/ssl/certs",
         metavar="KEYPATH",
         help=("Path to public key"))
     args = parser.parse_args(arguments[1:])
