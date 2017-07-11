@@ -4,18 +4,24 @@ import os
 
 from dpres_signature.smime import smime_verify, smime_sign
 from dpres_signature.manifest import Manifest, ManifestError
-
+from M2Crypto import SMIME
 
 def signature_verify(signature_path, ca_path='/etc/ssl/certs'):
     """Verify SMIME/X509 signed manifest"""
     if not os.path.isfile(signature_path):
         return 117
     with open(signature_path) as infile:
-        manifest_data = smime_verify(ca_path, infile.read())
+        try:
+            manifest_data = smime_verify(ca_path, infile.read())
+        except (SMIME.SMIME_Error, SMIME.PKCS7_Error, ManifestError):
+            return 117
 
     base_path = os.path.dirname(signature_path)
-    manifest = Manifest.from_string(manifest_data, base_path)
-    manifest.verify()
+    try:
+        manifest = Manifest.from_string(manifest_data, base_path)
+        manifest.verify()
+    except ManifestError:
+        return 117
     return 0
 
 

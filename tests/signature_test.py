@@ -68,8 +68,7 @@ def test_missing_ca(signature_fx):
     signature"""
 
     os.unlink(str(signature_fx.join('certs/68b140ba.0')))
-    with pytest.raises(SMIME.PKCS7_Error):
-        run_verify(signature_fx)
+    assert run_verify(signature_fx) == 117
 
 
 def test_corrupted_signature(signature_fx):
@@ -80,8 +79,7 @@ def test_corrupted_signature(signature_fx):
         outfile.seek(600, 0)
         outfile.write('foo')
 
-    with pytest.raises(SMIME.SMIME_Error):
-        run_verify(signature_fx)
+    assert run_verify(signature_fx) == 117
 
 
 def test_corrupted_file(signature_fx):
@@ -93,15 +91,13 @@ def test_corrupted_file(signature_fx):
         outfile.seek(600, 0)
         outfile.write('foo')
 
-    with pytest.raises(ManifestError):
-        run_verify(signature_fx)
+    assert run_verify(signature_fx) == 117
 
 
 def test_expired_certificate(tmpdir):
     """Test expired certificate"""
     write_signature(tmpdir, -1)
-    with pytest.raises(SMIME.PKCS7_Error):
-        run_verify(tmpdir)
+    assert run_verify(tmpdir) == 117
 
 
 def test_missing_signature(signature_fx):
