@@ -13,7 +13,7 @@ code.
 
 Digital signature is a manifest file that lists all files,
 that are signed. As a requirement, all signed files have to be in
-the directory or subdirectory of varmiste.sig given in arguments.
+the directory or subdirectory of signature.sig given in arguments.
 
 """
 
@@ -27,6 +27,10 @@ def parse_arguments(arguments):
     description = \
         ("Tool for signing and checking signature of a file.")
     parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        'files', nargs='*',
+        default='',
+        help=("Files to be checked from manifest, separated with whitespace."))
     parser.add_argument(
         '-s', '--signature-path',
         help=("Signature files full path"))
@@ -49,7 +53,7 @@ def main(arguments=None):
     args = parse_arguments(arguments)
     return dpres_signature.signature.signature_verify(
         signature_path=args.signature_path,
-        ca_path=args.key_path)
+        ca_path=args.key_path, filelist=args.files)
 
 
 if __name__ == '__main__':
