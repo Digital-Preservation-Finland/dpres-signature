@@ -12,6 +12,10 @@ def test_parse_arguments():
     assert args.key_path == "/etc/foo"
     assert args.signature_path == "/tmp/foo/signature.sig"
 
+    args = parse_arguments(
+        ['foo.py', '-s=/tmp/foo/signature.sig', '-k=/etc/foo', 'mets.xml'])
+    assert args.files == ['mets.xml']
+
     with raises(SystemExit):
         args = parse_arguments(
             ['foo.py', '-c=/etc/foo', '-k=/etc/foo2', '-s=foo'])

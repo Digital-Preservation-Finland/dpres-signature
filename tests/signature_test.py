@@ -138,3 +138,11 @@ def test_corrupted_manifest(signature_fx):
         outfile.write(sig)
     assert run_verify(signature_fx) == 117
 
+def test_missing_file_manifest(signature_fx):
+    signature = signature_fx
+    signature_path = str(signature.join('data/signature.sig'))
+    ca_path = os.path.join(str(signature), 'certs')
+    assert signature_verify(
+        signature_path=signature_path,
+        ca_path=ca_path, filelist=['mets.xml']) == 117
+
