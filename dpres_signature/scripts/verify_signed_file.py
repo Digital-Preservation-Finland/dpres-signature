@@ -1,10 +1,6 @@
 #!/usr/bin/python
 # vim:ft=python
 """
-Verify digital signature file for a file(s) with command::
-
-    verify-signed-file <signture_path> [rsa-public-key.pem]
-
 To verify digital signature you need valid RSA public key. Filename to public
 key is passed as command line parameter.
 
@@ -13,7 +9,7 @@ code.
 
 Digital signature is a manifest file that lists all files,
 that are signed. As a requirement, all signed files have to be in
-the directory or subdirectory of signature.sig given in arguments.
+the directory or subdirectory of the signature file.
 
 """
 
