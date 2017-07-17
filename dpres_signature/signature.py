@@ -32,12 +32,7 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
             manifest_data = smime_verify(ca_path, infile.read())
         except (SMIME.SMIME_Error, SMIME.PKCS7_Error, ManifestError):
             return 117
-
-    manifest_data = manifest_data.splitlines()
-    while not manifest_data[0] and len(manifest_data) > 0:
-        manifest_data.pop(0)
-    while not manifest_data[-1] and len(manifest_data) > 0:
-        manifest_data.pop()
+    manifest_data = manifest_data.strip().splitlines()
     if '' in manifest_data:
         manifest_data = manifest_data[(manifest_data.index('') + 1):]
     if len(manifest_data) == 0:

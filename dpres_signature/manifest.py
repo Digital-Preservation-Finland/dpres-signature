@@ -28,6 +28,8 @@ class FileEntry(object):
     def from_string(cls, line, base_path):
         """Parse manifest entry from string"""
         fields = line.rstrip().split(':')
+        if len(fields) != 3:
+            raise ManifestError
         return cls(
             filename=fields[0],
             algorithm=fields[1],

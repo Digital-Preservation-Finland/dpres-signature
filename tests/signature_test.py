@@ -6,6 +6,7 @@ import pytest
 
 from M2Crypto import SMIME
 
+from dpres_signature.smime import smime_sign
 from dpres_signature.signature import signature_verify
 from dpres_signature.manifest import ManifestError
 
@@ -105,3 +106,35 @@ def test_missing_signature(signature_fx):
     signature = str(signature_fx.join('data/signature.sig'))
     os.remove(signature)
     assert run_verify(signature_fx) == 117
+
+
+def test_header_in_manifest(signature_fx):
+    """Test header in manifest."""
+    sig_tmplate = signature_fx
+    path = str(sig_tmplate)
+    signature = sig_tmplate.join('data/signature.sig')
+    issuer_hash = '68b140ba.0'
+    key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
+    cert_path = os.path.join(path, 'certs', issuer_hash)
+    manifest = 'Content-Type: text/plain; charset=us-ascii\n' \
+        + 'Content-Transfer-Encoding: 7bit\n\n' \
+        + 'dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e4206f'
+    sig = smime_sign(key_path, cert_path, manifest)
+    with signature.open('w') as outfile:
+        outfile.write(sig)
+    assert run_verify(signature_fx) == 0
+
+def test_corrupted_manifest(signature_fx):
+    """Test corrupted manifest"""
+    sig_tmplate = signature_fx
+    path = str(sig_tmplate)
+    signature = sig_tmplate.join('data/signature.sig')
+    issuer_hash = '68b140ba.0'
+    key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
+    cert_path = os.path.join(path, 'certs', issuer_hash)
+    manifest = 'dir/test.txt70abb39c88f7c99c353ee79000cb4e1301e'
+    sig = smime_sign(key_path, cert_path, manifest)
+    with signature.open('w') as outfile:
+        outfile.write(sig)
+    assert run_verify(signature_fx) == 117
+
