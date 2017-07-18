@@ -20,7 +20,7 @@ def test_parse_arguments():
         args = parse_arguments(
             ['foo.py', '-c=/etc/foo', '-k=/etc/foo2', '-s=foo'])
 
-    with raises(RuntimeError):
+    with raises(SystemExit):
         args = parse_arguments(['foo.py', '-k=/etc/foo'])
 
 

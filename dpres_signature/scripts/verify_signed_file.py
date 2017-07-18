@@ -29,16 +29,15 @@ def parse_arguments(arguments):
         help=("Files to be checked from manifest, separated with whitespace."))
     parser.add_argument(
         '-s', '--signature-path',
+        required=True,
         help=("Signature files full path"))
     parser.add_argument(
         "-k", "--key-path",
         default="/etc/ssl/certs",
         metavar="KEYPATH",
+        required=True,
         help=("Path to public key"))
     args = parser.parse_args(arguments[1:])
-
-    if args.signature_path is None or args.key_path is None:
-        raise RuntimeError("Missing argument(s): targets")
     return args
 
 

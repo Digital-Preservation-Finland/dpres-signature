@@ -37,19 +37,20 @@ def parse_arguments(arguments):
     parser.add_argument(
         "-c", "--ca-path",
         metavar="CAPATH",
+        default="/etc/ssl/certs",
         help=("Path to OpenSSL certificates"))
     parser.add_argument(
         "-k", "--key-path",
         metavar="KEYPATH",
+        required=True,
         help=("Path to private key"))
     parser.add_argument(
         "-s", "--signature-path",
         metavar="SIGNATUREPATH",
+        required=True,
         help=("Signature path"))
 
     args = parser.parse_args(arguments[1:])
-    if args.signature_path is None or args.key_path is None or args.ca_path is None:
-        raise RuntimeError("Missing argument(s): targets")
     return args
 
 

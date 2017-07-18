@@ -15,7 +15,7 @@ def test_parse_arguments():
     assert args.ca_path == "/etc/foo"
     assert args.signature_path == "/tmp/foo/signature.sig"
 
-    with raises(RuntimeError):
+    with raises(SystemExit):
         args = parse_arguments(['foo.py', '-c=/etc/foo'])
 
 
