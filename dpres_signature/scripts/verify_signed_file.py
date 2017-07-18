@@ -35,7 +35,6 @@ def parse_arguments(arguments):
         "-k", "--key-path",
         default="/etc/ssl/certs",
         metavar="KEYPATH",
-        required=True,
         help=("Path to public key"))
     args = parser.parse_args(arguments[1:])
     return args
