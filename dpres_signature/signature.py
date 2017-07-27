@@ -1,6 +1,7 @@
 """Create and verify SMIME/X509 signed manifest files"""
 
 import os
+import sys
 
 from dpres_signature.smime import smime_verify, smime_sign
 from dpres_signature.manifest import Manifest, ManifestError
@@ -26,19 +27,29 @@ def check_filelist(manifest, files):
 def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
     """Verify SMIME/X509 signed manifest"""
     if not os.path.isfile(signature_path):
+        print >> sys.stderr, "", signature_path, " is not a file"
         return 117
     with open(signature_path) as infile:
         try:
             manifest_data = smime_verify(ca_path, infile.read())
-        except (SMIME.SMIME_Error, SMIME.PKCS7_Error, ManifestError):
+        except SMIME.SMIME_Error as err:
+            print >> sys.stderr, str(err)
+            return 117
+        except SMIME.PKCS7_Error as err:
+            print >> sys.stderr, str(err)
+            return 117
+        except ManifestError as err:
+            print >> sys.stderr, str(err)
             return 117
     manifest_data = manifest_data.strip().splitlines()
     if '' in manifest_data:
         manifest_data = manifest_data[(manifest_data.index('') + 1):]
     if len(manifest_data) == 0:
+        print >> sys.stderr, "Empty manifest data"
         return 117
 
     if check_filelist(manifest_data, filelist) == False:
+        print >> sys.stderr, "Required file not included in the manifest data"
         return 117
 
     base_path = os.path.dirname(signature_path)
@@ -46,7 +57,8 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
         try:
             manifest = Manifest.from_string(line, base_path)
             manifest.verify()
-        except ManifestError:
+        except ManifestError as err:
+            print >> sys.stderr, str(err)
             return 117
     return 0
 
