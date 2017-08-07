@@ -69,7 +69,8 @@ def test_missing_ca(signature_fx):
     signature"""
 
     os.unlink(str(signature_fx.join('certs/68b140ba.0')))
-    assert run_verify(signature_fx) == 117
+    with pytest.raises(SMIME.PKCS7_Error):
+        run_verify(signature_fx)
 
 
 def test_corrupted_signature(signature_fx):
@@ -80,7 +81,8 @@ def test_corrupted_signature(signature_fx):
         outfile.seek(600, 0)
         outfile.write('foo')
 
-    assert run_verify(signature_fx) == 117
+    with pytest.raises(SMIME.SMIME_Error):
+        run_verify(signature_fx)
 
 
 def test_corrupted_file(signature_fx):
@@ -92,21 +94,23 @@ def test_corrupted_file(signature_fx):
         outfile.seek(600, 0)
         outfile.write('foo')
 
-    assert run_verify(signature_fx) == 117
+    with pytest.raises(ManifestError):
+        run_verify(signature_fx)
 
 
 def test_expired_certificate(tmpdir):
     """Test expired certificate"""
     write_signature(tmpdir, -1)
-    assert run_verify(tmpdir) == 117
+    with pytest.raises(SMIME.PKCS7_Error):
+        run_verify(tmpdir)
 
 
 def test_missing_signature(signature_fx):
     """Test for missing signature."""
     signature = str(signature_fx.join('data/signature.sig'))
     os.remove(signature)
-    assert run_verify(signature_fx) == 117
-
+    with pytest.raises(IOError):
+        run_verify(signature_fx)
 
 def test_header_in_manifest(signature_fx):
     """Test header in manifest."""
@@ -136,13 +140,15 @@ def test_corrupted_manifest(signature_fx):
     sig = smime_sign(key_path, cert_path, manifest)
     with signature.open('w') as outfile:
         outfile.write(sig)
-    assert run_verify(signature_fx) == 117
+    with pytest.raises(ManifestError):
+        run_verify(signature_fx)
 
 def test_missing_file_manifest(signature_fx):
     signature = signature_fx
     signature_path = str(signature.join('data/signature.sig'))
     ca_path = os.path.join(str(signature), 'certs')
-    assert signature_verify(
-        signature_path=signature_path,
-        ca_path=ca_path, filelist=['mets.xml']) == 117
+    with pytest.raises(ManifestError):
+        signature_verify(
+            signature_path=signature_path,
+            ca_path=ca_path, filelist=['mets.xml'])
 

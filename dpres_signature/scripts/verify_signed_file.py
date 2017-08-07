@@ -17,7 +17,6 @@ import sys
 import argparse
 import dpres_signature.signature
 
-
 def parse_arguments(arguments):
     """Parse commandline arguments."""
     description = \
@@ -45,11 +44,16 @@ def main(arguments=None):
     if arguments is None:
         arguments = sys.argv
     args = parse_arguments(arguments)
-    return dpres_signature.signature.signature_verify(
-        signature_path=args.signature_path,
-        ca_path=args.key_path, filelist=args.files)
+    try:
+        return dpres_signature.signature.signature_verify(
+            signature_path=args.signature_path,
+            ca_path=args.key_path, filelist=args.files)
+    except Exception as err:
+        print >> sys.stderr, str(err)
+        return 117
 
 
 if __name__ == '__main__':
     RETVAL = main()
     sys.exit(RETVAL)
+
