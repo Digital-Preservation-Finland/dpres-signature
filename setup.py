@@ -28,7 +28,9 @@ def main():
         name='dpres_signature',
         packages=find_packages(exclude=['tests', 'tests.*']),
         version="0.1",
-        entry_points={'console_scripts': scripts_list()})
+        entry_points={'console_scripts': scripts_list()},
+        install_requires=['M2Crypto']
+    )
     return 0
 
 if __name__ == '__main__':
