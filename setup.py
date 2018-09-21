@@ -3,6 +3,7 @@ import os
 import sys
 
 from setuptools import setup, find_packages
+from version import get_version
 
 
 def scripts_list():
@@ -27,7 +28,7 @@ def main():
     setup(
         name='dpres_signature',
         packages=find_packages(exclude=['tests', 'tests.*']),
-        version="0.1",
+        version=get_version(),
         entry_points={'console_scripts': scripts_list()},
         install_requires=['M2Crypto']
     )
