@@ -59,11 +59,17 @@ def main(arguments=None):
     if arguments is None:
         arguments = sys.argv
     args = parse_arguments(arguments)
-    return dpres_signature.signature.signature_write(
+    signature = dpres_signature.signature.create_signature(
         signature_path=args.signature_path,
         key_path=args.key_path,
-        cert_path=args.ca_path,
-        include_patterns=args.targets)
+        include_patterns=args.targets,
+        cert_path=args.ca_path
+    )
+
+    with open(args.signature_path, 'w') as outfile:
+        outfile.write(signature)
+
+    return 0
 
 
 if __name__ == '__main__':

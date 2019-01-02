@@ -43,8 +43,9 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
     return 0
 
 
-def signature_write(signature_path, key_path, cert_path, include_patterns):
-    """Write SMIME/X509 signed manifest"""
+def create_signature(signature_path, key_path, include_patterns,
+                     cert_path=None):
+    """Create SMIME/X509 signed manifest"""
 
     base_path = os.path.dirname(signature_path)
     manifest = Manifest(base_path)
@@ -54,8 +55,4 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
             raise ManifestError("Path %s is illegal" % pattern)
         manifest.add_file(pattern)
 
-    signature = smime_sign(key_path, cert_path, manifest)
-
-    with open(signature_path, 'w') as outfile:
-        outfile.write(signature)
-    return 0
+    return smime_sign(key_path, cert_path, manifest)

@@ -7,7 +7,7 @@ import shutil
 import pytest
 
 from dpres_signature.x509 import write_new_certificate
-from dpres_signature.signature import signature_write
+from dpres_signature.signature import create_signature
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -52,10 +52,12 @@ def write_signature(tmpdir, expiry_days=0):
     with open(signed_file_path, 'w') as outfile:
         outfile.write('Sign me!')
 
-    signature_write(
-        signature_path=signature_path,
-        key_path=key_path,
-        cert_path=cert_path,
-        include_patterns=['dir/test.txt'])
+    signature = create_signature(signature_path=signature_path,
+                                 key_path=key_path,
+                                 include_patterns=['dir/test.txt'],
+                                 cert_path=cert_path)
+
+    with open(signature_path, 'w') as outfile:
+        outfile.write(signature)
 
     return tmpdir
