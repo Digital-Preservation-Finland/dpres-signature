@@ -1,17 +1,15 @@
 """Create and verify SMIME/X509 signed manifest files"""
 
 import os
-import sys
 
 from dpres_signature.smime import smime_verify, smime_sign
 from dpres_signature.manifest import Manifest, ManifestError
-from M2Crypto import SMIME
 
 
 def check_filelist(manifest, files):
     """Verify that manifest includes given files
     """
-    if files == None or files == '':
+    if files is None or files == '':
         return True
     manifest_files = []
     for line in manifest:
@@ -19,7 +17,7 @@ def check_filelist(manifest, files):
     for ind, name in enumerate(manifest_files):
         manifest_files[ind] = os.path.normpath(name)
     for name in files:
-        if not name in manifest_files:
+        if name not in manifest_files:
             raise ManifestError(
                 'Required file %s missing from manifest' % name)
     return
@@ -61,4 +59,3 @@ def signature_write(signature_path, key_path, cert_path, include_patterns):
     with open(signature_path, 'w') as outfile:
         outfile.write(signature)
     return 0
-
