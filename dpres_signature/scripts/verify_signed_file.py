@@ -12,15 +12,15 @@ that are signed. As a requirement, all signed files have to be in
 the directory or subdirectory of the signature file.
 
 """
-
+from __future__ import print_function
 import sys
 import argparse
 import dpres_signature.signature
 
+
 def parse_arguments(arguments):
     """Parse commandline arguments."""
-    description = \
-        ("Tool for signing and checking signature of a file.")
+    description = "Tool for checking signature of a file."
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         'files', nargs='*',
@@ -48,12 +48,11 @@ def main(arguments=None):
         return dpres_signature.signature.signature_verify(
             signature_path=args.signature_path,
             ca_path=args.key_path, filelist=args.files)
-    except Exception as err:
-        print >> sys.stderr, str(err)
+    except Exception as err:  # pylint: disable=broad-except
+        print(str(err), file=sys.stderr)
         return 117
 
 
 if __name__ == '__main__':
     RETVAL = main()
     sys.exit(RETVAL)
-

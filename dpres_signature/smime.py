@@ -29,8 +29,7 @@ def smime_sign(key_path, cert_path, message):
 
     # write message & signature to output buffer
     smime.write(out, pkcs7, message_buf)
-
-    return ''.join([x for x in out.read()])
+    return out.read()
 
 
 def smime_verify(ca_path, message):

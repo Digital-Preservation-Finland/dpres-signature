@@ -29,3 +29,14 @@ def test_main_verify(signature_fx):
     signature_path = os.path.join(str(signature_fx), 'data/signature.sig')
     cert_path = os.path.join(str(signature_fx), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
+
+
+def test_none_argument():
+    """Test when no arguments are given."""
+    with raises(SystemExit):
+        main(arguments=None)
+
+
+def test_no_signature():
+    """Test when non-existing signature file given."""
+    main(['foo.py', '-s=%s' % 'does/not/exists'])

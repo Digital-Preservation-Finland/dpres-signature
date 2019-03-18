@@ -2,7 +2,7 @@
 
 import logging
 import os
-import shutil
+from io import open
 
 import pytest
 
@@ -13,13 +13,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(scope="function")
-def signature_fx(tmpdir, request):
+def signature_fx(tmpdir):
     """Write fresh keypair, certificates and signatures for each test"""
 
-    def _fin():
-        """delete temporary path"""
-        shutil.rmtree(str(tmpdir))
-    request.addfinalizer(_fin)
     return write_signature(tmpdir, 10)
 
 
@@ -49,15 +45,15 @@ def write_signature(tmpdir, expiry_days=0):
 
     if not os.path.exists(signed_file_dir):
         os.mkdir(signed_file_dir)
-    with open(signed_file_path, 'w') as outfile:
-        outfile.write('Sign me!')
+    with open(signed_file_path, 'wb') as outfile:
+        outfile.write(b'Sign me!')
 
     signature = create_signature(signature_path=signature_path,
                                  key_path=key_path,
                                  include_patterns=['dir/test.txt'],
                                  cert_path=cert_path)
 
-    with open(signature_path, 'w') as outfile:
+    with open(signature_path, 'wb') as outfile:
         outfile.write(signature)
 
     return tmpdir

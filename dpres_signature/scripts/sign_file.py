@@ -23,13 +23,13 @@ keypairs see:
 
 import sys
 import argparse
+from io import open
 import dpres_signature.signature
 
 
 def parse_arguments(arguments):
     """Parse commandline arguments."""
-    description = \
-        ("Tool for signing and checking signature of a file.")
+    description = "Tool for signing a signature to a file."
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         'targets', nargs='*',
@@ -66,7 +66,7 @@ def main(arguments=None):
         cert_path=args.ca_path
     )
 
-    with open(args.signature_path, 'w') as outfile:
+    with open(args.signature_path, 'wb') as outfile:
         outfile.write(signature)
 
     return 0

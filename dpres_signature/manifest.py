@@ -1,16 +1,16 @@
 """Write and verify manifest files"""
 
 import os
+import six
 
 from dpres_signature.checksum import sha1_hexdigest
 
 
 class ManifestError(Exception):
     """Manifest errors"""
-    pass
 
 
-class FileEntry(object):
+class FileEntry:
     """Manifest entries"""
 
     checksum_functions = {
@@ -19,15 +19,16 @@ class FileEntry(object):
 
     def __init__(self, filename, algorithm, hex_digest, base_path):
         """init entry"""
-        self.filename = filename
-        self.algorithm = algorithm
-        self.hex_digest = hex_digest
+        self.filename = six.ensure_str(filename)
+        self.algorithm = six.ensure_str(algorithm)
+        if hex_digest is not None:
+            self.hex_digest = six.ensure_str(hex_digest)
         self.base_path = base_path
 
     @classmethod
     def from_string(cls, line, base_path):
         """Parse manifest entry from string"""
-        fields = line.rstrip().split(':')
+        fields = line.rstrip().split(b':')
         if len(fields) != 3:
             raise ManifestError
         return cls(
@@ -53,7 +54,7 @@ class FileEntry(object):
     def verify(self):
         """Verify file checksum"""
         file_hex_digest = self.file_hex_digest()
-        if self.hex_digest != file_hex_digest:
+        if six.ensure_str(self.hex_digest) != file_hex_digest:
             raise ManifestError("Checksum mismatch %s: %s != %s" % (
                 self.filename, self.hex_digest, file_hex_digest))
 
@@ -61,7 +62,7 @@ class FileEntry(object):
         return ":".join([self.filename, self.algorithm, self.hex_digest])
 
 
-class Manifest(object):
+class Manifest:
     """Generate and verify manifest files"""
 
     def __init__(self, base_path=None):

@@ -19,7 +19,7 @@ def scripts_list():
         scriptname = modulename.replace('_', '-')
         scripts.append(
             '%s = dpres_signature.scripts.%s:main' % (scriptname, modulename))
-    print scripts
+    print(scripts)
     return scripts
 
 
@@ -33,6 +33,7 @@ def main():
         install_requires=['M2Crypto']
     )
     return 0
+
 
 if __name__ == '__main__':
     RETVAL = main()

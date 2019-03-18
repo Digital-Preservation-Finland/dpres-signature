@@ -1,19 +1,18 @@
 """Create and verify SMIME/X509 signed manifest files"""
 
 import os
-
+from io import open
 from dpres_signature.smime import smime_verify, smime_sign
 from dpres_signature.manifest import Manifest, ManifestError
 
 
 def check_filelist(manifest, files):
-    """Verify that manifest includes given files
-    """
-    if files is None or files == '':
-        return True
+    """Verify that manifest includes given files"""
+    if not files:
+        return
     manifest_files = []
     for line in manifest:
-        manifest_files.append(line.split(':')[0])
+        manifest_files.append(line.split(b':')[0])
     for ind, name in enumerate(manifest_files):
         manifest_files[ind] = os.path.normpath(name)
     for name in files:
@@ -25,13 +24,13 @@ def check_filelist(manifest, files):
 
 def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
     """Verify SMIME/X509 signed manifest"""
-    with open(signature_path) as infile:
+    with open(signature_path, 'rb') as infile:
         manifest_data = smime_verify(ca_path, infile.read())
 
     manifest_data = manifest_data.strip().splitlines()
-    if '' in manifest_data:
-        manifest_data = manifest_data[(manifest_data.index('') + 1):]
-    if len(manifest_data) == 0:
+    if b'' in manifest_data:
+        manifest_data = manifest_data[(manifest_data.index(b'') + 1):]
+    if not manifest_data:
         raise ManifestError('Empty manifest data')
 
     check_filelist(manifest_data, filelist)

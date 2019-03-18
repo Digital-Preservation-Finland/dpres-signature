@@ -79,7 +79,7 @@ def test_corrupted_signature(signature_fx):
     signature = signature_fx.join('data/signature.sig')
     with signature.open('r+b') as outfile:
         outfile.seek(600, 0)
-        outfile.write('foo')
+        outfile.write(b'foo')
 
     with pytest.raises(SMIME.SMIME_Error):
         run_verify(signature_fx)
@@ -92,7 +92,7 @@ def test_corrupted_file(signature_fx):
 
     with signed_file.open('r+b') as outfile:
         outfile.seek(600, 0)
-        outfile.write('foo')
+        outfile.write(b'foo')
 
     with pytest.raises(ManifestError):
         run_verify(signature_fx)
@@ -112,6 +112,7 @@ def test_missing_signature(signature_fx):
     with pytest.raises(IOError):
         run_verify(signature_fx)
 
+
 def test_header_in_manifest(signature_fx):
     """Test header in manifest."""
     sig_tmplate = signature_fx
@@ -120,13 +121,14 @@ def test_header_in_manifest(signature_fx):
     issuer_hash = '68b140ba.0'
     key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
     cert_path = os.path.join(path, 'certs', issuer_hash)
-    manifest = 'Content-Type: text/plain; charset=us-ascii\n' \
-        + 'Content-Transfer-Encoding: 7bit\n\n' \
-        + 'dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e4206f'
+    manifest = ('Content-Type: text/plain; charset=us-ascii\n'
+                'Content-Transfer-Encoding: 7bit\n\n'
+                'dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e4206f')
     sig = smime_sign(key_path, cert_path, manifest)
-    with signature.open('w') as outfile:
+    with signature.open('wb') as outfile:
         outfile.write(sig)
     assert run_verify(signature_fx) == 0
+
 
 def test_corrupted_manifest(signature_fx):
     """Test corrupted manifest"""
@@ -138,12 +140,14 @@ def test_corrupted_manifest(signature_fx):
     cert_path = os.path.join(path, 'certs', issuer_hash)
     manifest = 'dir/test.txt70abb39c88f7c99c353ee79000cb4e1301e'
     sig = smime_sign(key_path, cert_path, manifest)
-    with signature.open('w') as outfile:
+    with signature.open('wb') as outfile:
         outfile.write(sig)
     with pytest.raises(ManifestError):
         run_verify(signature_fx)
 
+
 def test_missing_file_manifest(signature_fx):
+    """Test when manifest file is missing."""
     signature = signature_fx
     signature_path = str(signature.join('data/signature.sig'))
     ca_path = os.path.join(str(signature), 'certs')
@@ -151,4 +155,3 @@ def test_missing_file_manifest(signature_fx):
         signature_verify(
             signature_path=signature_path,
             ca_path=ca_path, filelist=['mets.xml'])
-

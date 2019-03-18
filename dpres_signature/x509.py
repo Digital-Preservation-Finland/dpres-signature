@@ -42,7 +42,7 @@ def write_new_certificate(
 
 def asn_expiry(days=365):
     """Return ASN1 timestamp with now + days"""
-    time_now = long(time.time())
+    time_now = int(time.time())
     expire = ASN1.ASN1_UTCTIME()
     expire.set_time(time_now + days * 24 * 60 * 60)
     return expire
