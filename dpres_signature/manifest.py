@@ -95,3 +95,44 @@ class Manifest:
         for entry in self.entries:
             lines.append(str(entry))
         return "\n".join(lines)
+
+
+# pylint: disable=invalid-name, no-else-return
+# These pylint warnings were from the original six-developer.
+def _patch_six():
+    """Ensure the given six-package contains the mandatory
+    ensure_str-functions.
+    """
+
+    def _ensure_str(s, encoding='utf-8', errors='strict'):
+        """Coerce *s* to `str`.
+
+        For Python 2:
+          - `unicode` -> encoded to `str`
+          - `str` -> `str`
+
+        For Python 3:
+          - `str` -> `str`
+          - `bytes` -> decoded to `str`
+
+        Direct copy from release 1.12::
+
+            https://github.com/benjaminp/six/blob/master/six.py#L892
+        """
+        if not isinstance(s, (six.text_type, six.binary_type)):
+            raise TypeError("not expecting type '%s'" % type(s))
+        if six.PY2 and isinstance(s, six.text_type):
+            s = s.encode(encoding, errors)
+        elif six.PY3 and isinstance(s, six.binary_type):
+            s = s.decode(encoding, errors)
+        return s
+
+    six_funcs = {
+        'ensure_str': _ensure_str
+    }
+    for attr_name, new_func in six_funcs.items():
+        if not hasattr(six, attr_name):
+            setattr(six, attr_name, new_func)
+
+
+_patch_six()
