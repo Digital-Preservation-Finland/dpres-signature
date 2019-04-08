@@ -19,16 +19,15 @@ class FileEntry:
 
     def __init__(self, filename, algorithm, hex_digest, base_path):
         """init entry"""
-        self.filename = six.ensure_str(filename)
-        self.algorithm = six.ensure_str(algorithm)
-        if hex_digest is not None:
-            self.hex_digest = six.ensure_str(hex_digest)
+        self.filename = filename
+        self.algorithm = algorithm
+        self.hex_digest = hex_digest
         self.base_path = base_path
 
     @classmethod
     def from_string(cls, line, base_path):
         """Parse manifest entry from string"""
-        fields = line.rstrip().split(b':')
+        fields = line.rstrip().split(':')
         if len(fields) != 3:
             raise ManifestError
         return cls(
@@ -54,7 +53,7 @@ class FileEntry:
     def verify(self):
         """Verify file checksum"""
         file_hex_digest = self.file_hex_digest()
-        if six.ensure_str(self.hex_digest) != file_hex_digest:
+        if self.hex_digest != file_hex_digest:
             raise ManifestError("Checksum mismatch %s: %s != %s" % (
                 self.filename, self.hex_digest, file_hex_digest))
 
@@ -95,44 +94,3 @@ class Manifest:
         for entry in self.entries:
             lines.append(str(entry))
         return "\n".join(lines)
-
-
-# pylint: disable=invalid-name, no-else-return
-# These pylint warnings were from the original six-developer.
-def _patch_six():
-    """Ensure the given six-package contains the mandatory
-    ensure_str-functions.
-    """
-
-    def _ensure_str(s, encoding='utf-8', errors='strict'):
-        """Coerce *s* to `str`.
-
-        For Python 2:
-          - `unicode` -> encoded to `str`
-          - `str` -> `str`
-
-        For Python 3:
-          - `str` -> `str`
-          - `bytes` -> decoded to `str`
-
-        Direct copy from release 1.12::
-
-            https://github.com/benjaminp/six/blob/master/six.py#L892
-        """
-        if not isinstance(s, (six.text_type, six.binary_type)):
-            raise TypeError("not expecting type '%s'" % type(s))
-        if six.PY2 and isinstance(s, six.text_type):
-            s = s.encode(encoding, errors)
-        elif six.PY3 and isinstance(s, six.binary_type):
-            s = s.decode(encoding, errors)
-        return s
-
-    six_funcs = {
-        'ensure_str': _ensure_str
-    }
-    for attr_name, new_func in six_funcs.items():
-        if not hasattr(six, attr_name):
-            setattr(six, attr_name, new_func)
-
-
-_patch_six()
