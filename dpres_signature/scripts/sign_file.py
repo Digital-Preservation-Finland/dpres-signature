@@ -29,7 +29,7 @@ import dpres_signature.signature
 
 def parse_arguments(arguments):
     """Parse commandline arguments."""
-    description = "Tool for signing a signature to a file."
+    description = "Tool for creating a signature for a file"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         'targets', nargs='*',
