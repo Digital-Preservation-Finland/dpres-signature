@@ -2,6 +2,8 @@ ROOT=/
 PREFIX=/usr
 
 install:
+	python version.py > "dpres_signature/version.py"
+
 	# Cleanup temporary files
 	rm -f INSTALLED_FILES
 
