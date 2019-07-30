@@ -1,6 +1,8 @@
 """Write and verify manifest files"""
+from __future__ import unicode_literals
 
 import os
+
 import six
 
 from dpres_signature.checksum import sha1_hexdigest
@@ -10,6 +12,7 @@ class ManifestError(Exception):
     """Manifest errors"""
 
 
+@six.python_2_unicode_compatible
 class FileEntry:
     """Manifest entries"""
 
@@ -58,9 +61,15 @@ class FileEntry:
                 self.filename, self.hex_digest, file_hex_digest))
 
     def __str__(self):
+        """Return Unicode string representation of the file entry"""
         return ":".join([self.filename, self.algorithm, self.hex_digest])
 
+    def __bytes__(self):
+        """Return byte string representation of the file entry"""
+        return six.text_type(self).encode("utf-8")
 
+
+@six.python_2_unicode_compatible
 class Manifest:
     """Generate and verify manifest files"""
 
@@ -89,8 +98,9 @@ class Manifest:
         return manifest
 
     def __str__(self):
-        """Return string representation of the manifest"""
-        lines = []
-        for entry in self.entries:
-            lines.append(str(entry))
-        return "\n".join(lines)
+        """Return Unicode string representation of the manifest"""
+        return "\n".join([six.text_type(line) for line in self.entries])
+
+    def __bytes__(self):
+        """Return byte string representation of the manifest"""
+        return six.text_type(self).encode("utf-8")

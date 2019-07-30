@@ -1,9 +1,11 @@
 """Test for command line interface of signature module."""
 import os
 
+import six
 from pytest import raises
-from dpres_signature.scripts.sign_file import parse_arguments, main
+
 from dpres_signature.manifest import ManifestError
+from dpres_signature.scripts.sign_file import main, parse_arguments
 
 
 def test_parse_arguments():
@@ -21,9 +23,11 @@ def test_parse_arguments():
 
 def test_main_write(signature_fx):
     """Test for commandline script main."""
-    signature_path = os.path.join(str(signature_fx), 'data/signature.sig')
-    key_path = os.path.join(str(signature_fx), 'keys/rsa_keypair.key')
-    cert_path = os.path.join(str(signature_fx), 'certs/68b140ba.0')
+    signature_path = os.path.join(
+        six.text_type(signature_fx), 'data/signature.sig')
+    key_path = os.path.join(
+        six.text_type(signature_fx), 'keys/rsa_keypair.key')
+    cert_path = os.path.join(six.text_type(signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])
@@ -31,9 +35,12 @@ def test_main_write(signature_fx):
 
 def test_illegal_path(signature_fx):
     """Test illegal paths, prevent script escaping from signature directory."""
-    signature_path = os.path.join(str(signature_fx), 'data/signature.sig')
-    key_path = os.path.join(str(signature_fx), 'keys/rsa_keypair.key')
-    cert_path = os.path.join(str(signature_fx), 'certs/68b140ba.0')
+    signature_path = os.path.join(
+        six.text_type(signature_fx), 'data/signature.sig')
+    key_path = os.path.join(
+        six.text_type(signature_fx), 'keys/rsa_keypair.key')
+    cert_path = os.path.join(
+        six.text_type(signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     with raises(ManifestError):
         main(

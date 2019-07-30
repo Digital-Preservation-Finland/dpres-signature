@@ -27,3 +27,5 @@ tests/data/popen
 coverage.xml
 htmlcov/
 junit*.xml
+.tox
+venv*/

@@ -1,23 +1,23 @@
 """This is a test module for SMIME signature files verification."""
+from __future__ import unicode_literals
 
 import os
 
 import pytest
+import six
 
-from M2Crypto import SMIME
-
-from dpres_signature.smime import smime_sign
-from dpres_signature.signature import signature_verify
 from dpres_signature.manifest import ManifestError
-
+from dpres_signature.signature import signature_verify
+from dpres_signature.smime import smime_sign
+from M2Crypto import SMIME
 from tests.conftest import write_signature
 
 
 def run_verify(signature_fx):
     """Run the verify command"""
 
-    signature_path = str(signature_fx.join('data/signature.sig'))
-    ca_path = str(signature_fx.join('certs'))
+    signature_path = six.text_type(signature_fx.join('data/signature.sig'))
+    ca_path = six.text_type(signature_fx.join('certs'))
 
     return signature_verify(
         signature_path=signature_path,
@@ -27,7 +27,7 @@ def run_verify(signature_fx):
 def test_signature(signature_fx):
     """Test signature contents"""
 
-    signature = signature_fx.join("data/signature.sig").read()
+    signature = signature_fx.join("data/signature.sig").read_text("utf-8")
 
     assert 'MIME-Version: 1.0' in signature
     assert 'Content-Type: multipart/signed; protocol="application' in signature
@@ -43,7 +43,7 @@ def test_signature(signature_fx):
 def test_keypair(signature_fx):
     """Test new key pair creation."""
 
-    key_data = signature_fx.join('keys/rsa_keypair.key').read()
+    key_data = signature_fx.join('keys/rsa_keypair.key').read_text("utf-8")
 
     assert '-----BEGIN PRIVATE KEY-----' in key_data
     assert '-----END PRIVATE KEY-----' in key_data
@@ -52,7 +52,7 @@ def test_keypair(signature_fx):
 def test_certificate(signature_fx):
     """Test new key pair creation."""
 
-    certificate = signature_fx.join('certs/68b140ba.0').read()
+    certificate = signature_fx.join('certs/68b140ba.0').read_text("utf-8")
 
     assert '-----BEGIN CERTIFICATE-----' in certificate
     assert '-----END CERTIFICATE-----' in certificate
@@ -68,7 +68,7 @@ def test_missing_ca(signature_fx):
     """Test missing CA certificate / unknown self-signed certificate on
     signature"""
 
-    os.unlink(str(signature_fx.join('certs/68b140ba.0')))
+    os.unlink(six.text_type(signature_fx.join('certs/68b140ba.0')))
     with pytest.raises(SMIME.PKCS7_Error):
         run_verify(signature_fx)
 
@@ -107,7 +107,7 @@ def test_expired_certificate(tmpdir):
 
 def test_missing_signature(signature_fx):
     """Test for missing signature."""
-    signature = str(signature_fx.join('data/signature.sig'))
+    signature = six.text_type(signature_fx.join('data/signature.sig'))
     os.remove(signature)
     with pytest.raises(IOError):
         run_verify(signature_fx)
@@ -116,14 +116,14 @@ def test_missing_signature(signature_fx):
 def test_header_in_manifest(signature_fx):
     """Test header in manifest."""
     sig_tmplate = signature_fx
-    path = str(sig_tmplate)
+    path = six.text_type(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
     key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
     cert_path = os.path.join(path, 'certs', issuer_hash)
-    manifest = ('Content-Type: text/plain; charset=us-ascii\n'
-                'Content-Transfer-Encoding: 7bit\n\n'
-                'dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e4206f')
+    manifest = (b'Content-Type: text/plain; charset=us-ascii\n'
+                b'Content-Transfer-Encoding: 7bit\n\n'
+                b'dir/test.txt:sha1:70abb39c88f7c99c353ee79000cb4e1301e4206f')
     sig = smime_sign(key_path, cert_path, manifest)
     with signature.open('wb') as outfile:
         outfile.write(sig)
@@ -133,12 +133,12 @@ def test_header_in_manifest(signature_fx):
 def test_corrupted_manifest(signature_fx):
     """Test corrupted manifest"""
     sig_tmplate = signature_fx
-    path = str(sig_tmplate)
+    path = six.text_type(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
     key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
     cert_path = os.path.join(path, 'certs', issuer_hash)
-    manifest = 'dir/test.txt70abb39c88f7c99c353ee79000cb4e1301e'
+    manifest = b'dir/test.txt70abb39c88f7c99c353ee79000cb4e1301e'
     sig = smime_sign(key_path, cert_path, manifest)
     with signature.open('wb') as outfile:
         outfile.write(sig)
@@ -149,8 +149,8 @@ def test_corrupted_manifest(signature_fx):
 def test_missing_file_manifest(signature_fx):
     """Test when manifest file is missing."""
     signature = signature_fx
-    signature_path = str(signature.join('data/signature.sig'))
-    ca_path = os.path.join(str(signature), 'certs')
+    signature_path = six.text_type(signature.join('data/signature.sig'))
+    ca_path = os.path.join(six.text_type(signature), 'certs')
     with pytest.raises(ManifestError):
         signature_verify(
             signature_path=signature_path,

@@ -1,4 +1,5 @@
 """Calculate file checksums"""
+from __future__ import unicode_literals
 
 import hashlib
 from io import open
@@ -12,11 +13,11 @@ def sha1_hexdigest(path):
 
     """
     sha1 = hashlib.sha1()
-    infile = open(path, 'rb')
-    while True:
-        buf = infile.read(0x100000)
-        if not buf:
-            break
-        sha1.update(buf)
-    infile.close()
-    return sha1.hexdigest()
+    with open(path, "rb") as infile:
+        while True:
+            buf = infile.read(0x100000)
+            if not buf:
+                break
+            sha1.update(buf)
+
+        return sha1.hexdigest()

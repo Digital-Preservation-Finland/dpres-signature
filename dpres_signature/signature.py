@@ -22,16 +22,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from __future__ import unicode_literals
 
+import io
 import os
+
 import six
-from io import open
-from dpres_signature.smime import smime_verify, smime_sign
+
 from dpres_signature.manifest import Manifest, ManifestError
+from dpres_signature.smime import smime_sign, smime_verify
 
 
 def check_filelist(manifest, files):
-    """Verify that manifest includes given files"""
+    """
+    Verify that manifest includes given files
+
+    :param list manifest: List of files read from the manifest
+    :param list files: List of files provided separately from the manifest
+
+    :raises ManifestError: If a required file is missing
+    """
     if not files:
         return
     manifest_files = []
@@ -47,12 +57,21 @@ def check_filelist(manifest, files):
 
 
 def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
-    """Verify SMIME/X509 signed manifest"""
+    """
+    Verify SMIME/X509 signed manifest
+
+    :param str signature_path: Path to the signature file
+    :param str ca_path: path to the CA directory
+    :param list filelist: List of file paths associated with the manifest
+
+    :raises ManifestError: If the manifest is invalid
+    """
     with open(signature_path, 'rb') as infile:
         manifest_data = smime_verify(ca_path, infile.read())
 
     # For signature verification, the manifest_data is handled as string.
-    manifest_data = _ensure_str(manifest_data.strip()).splitlines()
+    manifest_data = manifest_data.decode("utf-8")
+    manifest_data = manifest_data.strip().splitlines()
     if '' in manifest_data:
         manifest_data = manifest_data[(manifest_data.index('') + 1):]
     if not manifest_data:
@@ -69,7 +88,16 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
 
 def create_signature(signature_path, key_path, include_patterns,
                      cert_path=None):
-    """Create SMIME/X509 signed manifest"""
+    """Create SMIME/X509 signed manifest
+
+    :param str signature_path: Path to the signature file
+    :param str key_path: Path to the key file
+    :param list include_patterns: List of files to sign
+    :param str cert_path: Path to the certificate file
+
+    :returns: Created signature
+    :rtype: bytes
+    """
 
     base_path = os.path.dirname(signature_path)
     manifest = Manifest(base_path)
@@ -80,29 +108,3 @@ def create_signature(signature_path, key_path, include_patterns,
         manifest.add_file(pattern)
 
     return smime_sign(key_path, cert_path, manifest)
-
-
-def _ensure_str(s, encoding='utf-8', errors='strict'):
-    """Coerce *s* to `str`.
-
-    For Python 2:
-      - `unicode` -> encoded to `str`
-      - `str` -> `str`
-
-    For Python 3:
-      - `str` -> `str`
-      - `bytes` -> decoded to `str`
-
-    Adapted from release 1.12 under MIT license::
-
-        https://github.com/benjaminp/six/blob/1.12.0/six.py#L872
-
-    Copyright (c) 2018 Benjamin Peterson
-    """
-    if not isinstance(s, (six.text_type, six.binary_type)):
-        raise TypeError("not expecting type '%s'" % type(s))
-    if six.PY2 and isinstance(s, six.text_type):
-        s = s.encode(encoding, errors)
-    elif six.PY3 and isinstance(s, six.binary_type):
-        s = s.decode(encoding, errors)
-    return s

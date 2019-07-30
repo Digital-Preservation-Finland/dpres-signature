@@ -1,8 +1,12 @@
 """Test for command line interface of signature module."""
+from __future__ import unicode_literals
+
 import os
 
+import six
 from pytest import raises
-from dpres_signature.scripts.verify_signed_file import parse_arguments, main
+
+from dpres_signature.scripts.verify_signed_file import main, parse_arguments
 
 
 def test_parse_arguments():
@@ -26,8 +30,9 @@ def test_parse_arguments():
 
 def test_main_verify(signature_fx):
     """Test for commandline script main."""
-    signature_path = os.path.join(str(signature_fx), 'data/signature.sig')
-    cert_path = os.path.join(str(signature_fx), 'certs')
+    signature_path = os.path.join(
+        six.text_type(signature_fx), 'data/signature.sig')
+    cert_path = os.path.join(six.text_type(signature_fx), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
 
 

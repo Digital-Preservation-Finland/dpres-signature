@@ -20,10 +20,11 @@ keypairs see:
     * http://www.madboa.com/geek/openssl/
 
 """
+from __future__ import unicode_literals
 
-import sys
 import argparse
-from io import open
+import sys
+
 import dpres_signature.signature
 
 

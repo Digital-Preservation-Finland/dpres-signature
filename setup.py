@@ -28,6 +28,7 @@ def main():
     setup(
         name='dpres_signature',
         packages=find_packages(exclude=['tests', 'tests.*']),
+        include_package_data=True,
         version=get_version(),
         entry_points={'console_scripts': scripts_list()},
         install_requires=['M2Crypto']
