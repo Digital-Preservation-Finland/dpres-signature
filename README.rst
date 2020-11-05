@@ -6,7 +6,6 @@ Installation
 ------------
 
 This software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
-Support for Python 3 is not planned in recent future.
 
 Installation and usage requires additional software in system $PATH:
 
