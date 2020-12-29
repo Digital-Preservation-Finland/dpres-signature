@@ -49,7 +49,7 @@ def write_signature(tmpdir, expiry_days=0):
     with open(signed_file_path, 'wb') as outfile:
         outfile.write(b'Sign me!')
 
-    signature = create_signature(signature_path=signature_path,
+    signature = create_signature(base_path=os.path.dirname(signature_path),
                                  key_path=key_path,
                                  include_patterns=['dir/test.txt'],
                                  cert_path=cert_path)

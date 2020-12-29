@@ -23,6 +23,7 @@ keypairs see:
 from __future__ import unicode_literals
 
 import argparse
+import os
 import sys
 
 import dpres_signature.signature
@@ -61,7 +62,7 @@ def main(arguments=None):
         arguments = sys.argv
     args = parse_arguments(arguments)
     signature = dpres_signature.signature.create_signature(
-        signature_path=args.signature_path,
+        base_path=os.path.dirname(args.signature_path),
         key_path=args.key_path,
         include_patterns=args.targets,
         cert_path=args.ca_path

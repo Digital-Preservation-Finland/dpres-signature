@@ -86,11 +86,11 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
     return 0
 
 
-def create_signature(signature_path, key_path, include_patterns,
+def create_signature(base_path, key_path, include_patterns,
                      cert_path=None):
     """Create SMIME/X509 signed manifest
 
-    :param str signature_path: Path to the signature file
+    :param str base_path: Base path of files
     :param str key_path: Path to the key file
     :param list include_patterns: List of files to sign
     :param str cert_path: Path to the certificate file
@@ -99,7 +99,6 @@ def create_signature(signature_path, key_path, include_patterns,
     :rtype: bytes
     """
 
-    base_path = os.path.dirname(signature_path)
     manifest = Manifest(base_path)
 
     for pattern in include_patterns:
