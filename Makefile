@@ -9,7 +9,6 @@ install:
 
 	# Use Python setuptools
 	python setup.py build ; python ./setup.py install -O1 --prefix="${PREFIX}" --root="${ROOT}" --record=INSTALLED_FILES
-	cat INSTALLED_FILES | sed 's/^/\//g' >> INSTALLED_FILES
 
 install3:
 	python3 version.py > "dpres_signature/version.py"
@@ -19,7 +18,6 @@ install3:
 
 	# Use Python setuptools
 	python3 setup.py build ; python3 ./setup.py install -O1 --prefix="${PREFIX}" --root="${ROOT}" --record=INSTALLED_FILES
-	cat INSTALLED_FILES | sed 's/^/\//g' >> INSTALLED_FILES
 
 test:
 	py.test -svvl --maxfail=9999 --junitprefix=dpres_signature --junitxml=junit.xml tests
