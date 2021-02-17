@@ -20,7 +20,7 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       python3-m2crypto
+Requires:       python3-m2crypto python3-six
 BuildRequires:	python3-pytest python3-setuptools
 
 %description

@@ -2,3 +2,4 @@ pytest
 coverage
 pytest-coverage
 M2Crypto
+six
