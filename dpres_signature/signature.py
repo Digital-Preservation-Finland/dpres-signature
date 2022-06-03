@@ -24,10 +24,8 @@ SOFTWARE.
 """
 from __future__ import unicode_literals
 
-import io
 import os
 
-import six
 
 from dpres_signature.manifest import Manifest, ManifestError
 from dpres_signature.smime import smime_sign, smime_verify

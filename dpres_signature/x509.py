@@ -55,7 +55,7 @@ def dict_to_x509_name(subject):
     name.C = subject['C']
     name.ST = subject['ST']
     name.L = subject['L']
-    name.O = subject['O']
+    name.O = subject['O'] # noqa
     name.OU = subject['OU']
     name.CN = subject['CN']
     return name
