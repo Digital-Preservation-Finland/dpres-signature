@@ -9,7 +9,7 @@
 %define file_build_number M4_FILE_BUILD_NUMBER
 %define file_commit_ref M4_FILE_COMMIT_REF
 
-Name:           python3-dpres-signature
+Name:           python-dpres-signature
 Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
 Summary:        Tools for creating and validating SMIME signatures.
@@ -26,8 +26,15 @@ BuildRequires: %{py3_dist pip}
 BuildRequires: %{py3_dist setuptools}
 BuildRequires: %{py3_dist wheel}
 
-%description
-Tools for creating and validating SMIME signatures.
+%global _description %{expand:
+Tools for creating and validating SMIME signatures.}
+
+%description %_description
+
+%package -n python3-dpres-signature
+Summary: %{summary}
+
+%description -n python3-dpres-signature %_description
 
 %prep
 %autosetup -n %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build_number}-g%{file_commit_ref}
@@ -43,7 +50,7 @@ Tools for creating and validating SMIME signatures.
 mv %{buildroot}%{_bindir}/sign-file %{buildroot}%{_bindir}/sign-file-3
 mv %{buildroot}%{_bindir}/verify-signed-file %{buildroot}%{_bindir}/verify-signed-file-3
 
-%files -f %{pyproject_files}
+%files -n python3-dpres-signature -f %{pyproject_files}
 %license LICENSE
 %doc README.rst
 %{_bindir}/sign-file-3
