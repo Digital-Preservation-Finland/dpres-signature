@@ -46,14 +46,17 @@ Summary: %{summary}
 %pyproject_install
 %pyproject_save_files dpres_signature
 
-# Rename executables to prevent naming collision with Python 2 RPM
-mv %{buildroot}%{_bindir}/sign-file %{buildroot}%{_bindir}/sign-file-3
-mv %{buildroot}%{_bindir}/verify-signed-file %{buildroot}%{_bindir}/verify-signed-file-3
+# TODO: executables with "-3" suffix are added to maintain compatibility with our systems.
+# executables with "-3" suffix should be deprecated.
+cp %{buildroot}%{_bindir}/sign-file %{buildroot}%{_bindir}/sign-file-3
+cp %{buildroot}%{_bindir}/verify-signed-file %{buildroot}%{_bindir}/verify-signed-file-3
 
 %files -n python3-dpres-signature -f %{pyproject_files}
 %license LICENSE
 %doc README.rst
+%{_bindir}/sign-file
 %{_bindir}/sign-file-3
+%{_bindir}/verify-signed-file
 %{_bindir}/verify-signed-file-3
 
 # TODO: For now changelog must be last, because it is generated automatically
