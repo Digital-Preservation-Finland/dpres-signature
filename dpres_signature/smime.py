@@ -30,7 +30,7 @@ def _to_str_path(path):
         return ensure_text(path)
 
 
-def smime_sign(key_path, cert_path, message):
+def smime_sign(key_path, cert_path, message, algorithm='sha1'):
     """
     Sign message with given certificate and signing key
 
@@ -40,6 +40,9 @@ def smime_sign(key_path, cert_path, message):
 
     :param message: Message to sign
     :type message: bytes or :class:`dpres_signature.manifest.Manifest`
+
+    :param algorithm: The used algorithm (e.g. 'sha256')
+    :type algorithm: str
 
     :returns: Signature
     :rtype: bytes
@@ -62,7 +65,7 @@ def smime_sign(key_path, cert_path, message):
     message_buf.write(message)
 
     with enable_insecure_sha1_crypto():
-        pkcs7 = smime.sign(message_buf, SMIME.PKCS7_DETACHED, algo='sha1')
+        pkcs7 = smime.sign(message_buf, SMIME.PKCS7_DETACHED, algo=algorithm)
 
     # Must recreate message buffer, it was consumed by smime.sign()
     message_buf = BIO.MemoryBuffer()

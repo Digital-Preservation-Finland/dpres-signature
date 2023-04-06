@@ -14,13 +14,22 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(scope="function")
-def signature_fx(tmpdir):
-    """Write fresh keypair, certificates and signatures for each test"""
+def sha1_signature_fx(tmpdir):
+    """Write fresh keypair, certificates and signatures for each test, using
+    SHA1 algorithm.
+    """
+    return write_signature(tmpdir, 10, algorithm='sha1')
 
-    return write_signature(tmpdir, 10)
+
+@pytest.fixture(scope="function")
+def sha256_signature_fx(tmpdir):
+    """Write fresh keypair, certificates and signatures for each test, using
+    SHA256 algorithm.
+    """
+    return write_signature(tmpdir, 10, algorithm='sha256')
 
 
-def write_signature(tmpdir, expiry_days=0):
+def write_signature(tmpdir, expiry_days=0, algorithm='sha1'):
     """Write fresh keypair, certificates and signatures for each test"""
 
     subject = {
@@ -42,17 +51,22 @@ def write_signature(tmpdir, expiry_days=0):
         public_key_path=key_path,
         cert_path=cert_path,
         subject=subject,
-        expiry_days=expiry_days)
+        expiry_days=expiry_days,
+        algorithm=algorithm
+    )
 
     if not os.path.exists(signed_file_dir):
         os.mkdir(signed_file_dir)
     with open(signed_file_path, 'wb') as outfile:
         outfile.write(b'Sign me!')
 
-    signature = create_signature(base_path=os.path.dirname(signature_path),
-                                 key_path=key_path,
-                                 include_patterns=['dir/test.txt'],
-                                 cert_path=cert_path)
+    signature = create_signature(
+        base_path=os.path.dirname(signature_path),
+        key_path=key_path,
+        include_patterns=['dir/test.txt'],
+        cert_path=cert_path,
+        algorithm=algorithm
+    )
 
     with open(signature_path, 'wb') as outfile:
         outfile.write(signature)

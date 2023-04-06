@@ -21,26 +21,40 @@ def test_parse_arguments():
         args = parse_arguments(['foo.py', '-c=/etc/foo'])
 
 
-def test_main_write(signature_fx):
+def test_main_write_sha1(sha1_signature_fx):
     """Test for commandline script main."""
     signature_path = os.path.join(
-        six.text_type(signature_fx), 'data/signature.sig')
+        six.text_type(sha1_signature_fx), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(signature_fx), 'keys/rsa_keypair.key')
-    cert_path = os.path.join(six.text_type(signature_fx), 'certs/68b140ba.0')
+        six.text_type(sha1_signature_fx), 'keys/rsa_keypair.key')
+    cert_path = os.path.join(
+        six.text_type(sha1_signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])
 
 
-def test_illegal_path(signature_fx):
+def test_main_write_sha256(sha256_signature_fx):
+    """Test for commandline script main."""
+    signature_path = os.path.join(
+        six.text_type(sha256_signature_fx), 'data/signature.sig')
+    key_path = os.path.join(
+        six.text_type(sha256_signature_fx), 'keys/rsa_keypair.key')
+    cert_path = os.path.join(
+        six.text_type(sha256_signature_fx), 'certs/68b140ba.0')
+    os.remove(signature_path)
+    main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
+          '-s=%s' % signature_path])
+
+
+def test_illegal_path(sha256_signature_fx):
     """Test illegal paths, prevent script escaping from signature directory."""
     signature_path = os.path.join(
-        six.text_type(signature_fx), 'data/signature.sig')
+        six.text_type(sha256_signature_fx), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(signature_fx), 'keys/rsa_keypair.key')
+        six.text_type(sha256_signature_fx), 'keys/rsa_keypair.key')
     cert_path = os.path.join(
-        six.text_type(signature_fx), 'certs/68b140ba.0')
+        six.text_type(sha256_signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     with raises(ManifestError):
         main(

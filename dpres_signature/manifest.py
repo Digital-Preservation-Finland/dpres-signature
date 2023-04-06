@@ -5,7 +5,7 @@ import os
 
 import six
 
-from dpres_signature.checksum import sha1_hexdigest
+from dpres_signature.checksum import sha1_hexdigest, sha256_hexdigest
 
 
 class ManifestError(Exception):
@@ -17,7 +17,8 @@ class FileEntry:
     """Manifest entries"""
 
     checksum_functions = {
-        'sha1': sha1_hexdigest
+        'sha1': sha1_hexdigest,
+        'sha256': sha256_hexdigest
     }
 
     def __init__(self, filename, algorithm, hex_digest, base_path):
@@ -78,10 +79,15 @@ class Manifest:
         self.entries = []
         self.base_path = base_path
 
-    def add_file(self, filename):
+    def add_file(self, filename, algorithm='sha1'):
         """Add file to manifest"""
         self.entries.append(
-            FileEntry.from_file(filename=filename, base_path=self.base_path))
+            FileEntry.from_file(
+                filename=filename,
+                base_path=self.base_path,
+                algorithm=algorithm
+            )
+        )
 
     def verify(self):
         """Verify all files in manifest"""

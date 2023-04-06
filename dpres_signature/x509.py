@@ -9,7 +9,8 @@ from dpres_signature.util import enable_insecure_sha1_crypto
 
 
 def write_new_certificate(
-        public_key_path, cert_path, subject, expiry_days=3560):
+        public_key_path, cert_path, subject, expiry_days=3560, algorithm='sha1'
+):
     """Create X509 certificate and private key
 
     http://www.openssl.org/docs/apps/req.html
@@ -39,7 +40,7 @@ def write_new_certificate(
     cert.set_subject(name)
 
     with enable_insecure_sha1_crypto():
-        cert.sign(public_key, 'sha1')
+        cert.sign(public_key, algorithm)
 
     cert.save(cert_path)
 

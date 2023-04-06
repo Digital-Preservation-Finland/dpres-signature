@@ -28,11 +28,19 @@ def test_parse_arguments():
         args = parse_arguments(['foo.py', '-k=/etc/foo'])
 
 
-def test_main_verify(signature_fx):
+def test_main_verify_sha1(sha1_signature_fx):
     """Test for commandline script main."""
     signature_path = os.path.join(
-        six.text_type(signature_fx), 'data/signature.sig')
-    cert_path = os.path.join(six.text_type(signature_fx), 'certs')
+        six.text_type(sha1_signature_fx), 'data/signature.sig')
+    cert_path = os.path.join(six.text_type(sha1_signature_fx), 'certs')
+    main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
+
+
+def test_main_verify_sha256(sha256_signature_fx):
+    """Test for commandline script main."""
+    signature_path = os.path.join(
+        six.text_type(sha256_signature_fx), 'data/signature.sig')
+    cert_path = os.path.join(six.text_type(sha256_signature_fx), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
 
 

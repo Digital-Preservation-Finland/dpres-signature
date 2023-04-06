@@ -85,13 +85,14 @@ def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
 
 
 def create_signature(base_path, key_path, include_patterns,
-                     cert_path=None):
+                     cert_path=None, algorithm='sha1'):
     """Create SMIME/X509 signed manifest
 
     :param str base_path: Base path of files
     :param str key_path: Path to the key file
     :param list include_patterns: List of files to sign
     :param str cert_path: Path to the certificate file
+    :param str algorithm: The used algorithm (e.g. 'sha256')
 
     :returns: Created signature
     :rtype: bytes
@@ -102,6 +103,6 @@ def create_signature(base_path, key_path, include_patterns,
     for pattern in include_patterns:
         if pattern[0] == '/' or pattern.find("..") != -1:
             raise ManifestError("Path %s is illegal" % pattern)
-        manifest.add_file(pattern)
+        manifest.add_file(pattern, algorithm)
 
-    return smime_sign(key_path, cert_path, manifest)
+    return smime_sign(key_path, cert_path, manifest, algorithm)
