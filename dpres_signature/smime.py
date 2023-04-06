@@ -4,10 +4,10 @@ from __future__ import unicode_literals
 import logging
 
 import six
-
-from dpres_signature.util import ensure_binary, ensure_text
-
 from M2Crypto import BIO, SMIME, SSL, X509
+
+from dpres_signature.util import (enable_insecure_sha1_crypto, ensure_binary,
+                                  ensure_text)
 
 LOGGER = logging.getLogger('dpres_signature.smime')
 
@@ -45,7 +45,6 @@ def smime_sign(key_path, cert_path, message):
     :rtype: bytes
     """
     # Instantiate an SMIME object; set it up; sign the buffer.
-
     key_path = _to_str_path(key_path)
 
     if cert_path:
@@ -61,7 +60,9 @@ def smime_sign(key_path, cert_path, message):
 
     message_buf = BIO.MemoryBuffer()
     message_buf.write(message)
-    pkcs7 = smime.sign(message_buf, SMIME.PKCS7_DETACHED)
+
+    with enable_insecure_sha1_crypto():
+        pkcs7 = smime.sign(message_buf, SMIME.PKCS7_DETACHED, algo='sha1')
 
     # Must recreate message buffer, it was consumed by smime.sign()
     message_buf = BIO.MemoryBuffer()
@@ -70,8 +71,10 @@ def smime_sign(key_path, cert_path, message):
     # Destination buffer for combined message
     out = BIO.MemoryBuffer()
 
-    # write message & signature to output buffer
-    smime.write(out, pkcs7, message_buf)
+    with enable_insecure_sha1_crypto():
+        # write message & signature to output buffer
+        smime.write(out, pkcs7, message_buf)
+
     return out.read()
 
 
@@ -108,4 +111,5 @@ def smime_verify(ca_path, message):
     smime.set_x509_store(ca_store)
     smime.set_x509_stack(certificate_x509)
 
-    return smime.verify(pkcs7, data)
+    with enable_insecure_sha1_crypto():
+        return smime.verify(pkcs7, data)

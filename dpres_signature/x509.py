@@ -5,6 +5,8 @@ import time
 
 from M2Crypto import X509, ASN1, EVP, RSA
 
+from dpres_signature.util import enable_insecure_sha1_crypto
+
 
 def write_new_certificate(
         public_key_path, cert_path, subject, expiry_days=3560):
@@ -36,7 +38,8 @@ def write_new_certificate(
     cert.set_issuer(name)
     cert.set_subject(name)
 
-    cert.sign(public_key, 'sha1')
+    with enable_insecure_sha1_crypto():
+        cert.sign(public_key, 'sha1')
 
     cert.save(cert_path)
 
