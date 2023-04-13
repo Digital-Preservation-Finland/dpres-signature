@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 
+import pytest
 import six
 from pytest import raises
 
@@ -28,19 +29,13 @@ def test_parse_arguments():
         args = parse_arguments(['foo.py', '-k=/etc/foo'])
 
 
-def test_main_verify_sha1(sha1_signature_fx):
+@pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
+def test_main_verify(request, algorithm):
     """Test for commandline script main."""
+    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
     signature_path = os.path.join(
-        six.text_type(sha1_signature_fx), 'data/signature.sig')
-    cert_path = os.path.join(six.text_type(sha1_signature_fx), 'certs')
-    main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
-
-
-def test_main_verify_sha256(sha256_signature_fx):
-    """Test for commandline script main."""
-    signature_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'data/signature.sig')
-    cert_path = os.path.join(six.text_type(sha256_signature_fx), 'certs')
+        six.text_type(signature_fx), 'data/signature.sig')
+    cert_path = os.path.join(six.text_type(signature_fx), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
 
 

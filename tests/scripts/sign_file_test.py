@@ -1,6 +1,7 @@
 """Test for command line interface of signature module."""
 import os
 
+import pytest
 import six
 from pytest import raises
 
@@ -21,27 +22,16 @@ def test_parse_arguments():
         args = parse_arguments(['foo.py', '-c=/etc/foo'])
 
 
-def test_main_write_sha1(sha1_signature_fx):
+@pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
+def test_main_write(request, algorithm):
     """Test for commandline script main."""
+    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
     signature_path = os.path.join(
-        six.text_type(sha1_signature_fx), 'data/signature.sig')
+        six.text_type(signature_fx), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(sha1_signature_fx), 'keys/rsa_keypair.key')
+        six.text_type(signature_fx), 'keys/rsa_keypair.key')
     cert_path = os.path.join(
-        six.text_type(sha1_signature_fx), 'certs/68b140ba.0')
-    os.remove(signature_path)
-    main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
-          '-s=%s' % signature_path])
-
-
-def test_main_write_sha256(sha256_signature_fx):
-    """Test for commandline script main."""
-    signature_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'data/signature.sig')
-    key_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'keys/rsa_keypair.key')
-    cert_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'certs/68b140ba.0')
+        six.text_type(signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])
