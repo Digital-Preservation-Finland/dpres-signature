@@ -8,6 +8,7 @@ import six
 from pytest import raises
 
 from dpres_signature.scripts.verify_signed_file import main, parse_arguments
+from tests.conftest import write_signature
 
 
 def test_parse_arguments():
@@ -30,12 +31,12 @@ def test_parse_arguments():
 
 
 @pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
-def test_main_verify(request, algorithm):
+def test_main_verify(tmpdir, algorithm):
     """Test for commandline script main."""
-    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
+    signature = write_signature(tmpdir, 10, algorithm)
     signature_path = os.path.join(
-        six.text_type(signature_fx), 'data/signature.sig')
-    cert_path = os.path.join(six.text_type(signature_fx), 'certs')
+        six.text_type(signature), 'data/signature.sig')
+    cert_path = os.path.join(six.text_type(signature), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
 
 

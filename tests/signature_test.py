@@ -5,11 +5,11 @@ import os
 
 import pytest
 import six
+from M2Crypto import SMIME
 
 from dpres_signature.manifest import ManifestError
 from dpres_signature.signature import signature_verify
 from dpres_signature.smime import smime_sign
-from M2Crypto import SMIME
 from tests.conftest import write_signature
 
 TEST_FILE_SHA1_DIGEST = "70abb39c88f7c99c353ee79000cb4e1301e4206f"
@@ -30,10 +30,10 @@ def run_verify(signature_fx):
 
 
 @pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
-def test_signature(request, algorithm):
+def test_signature(tmpdir, algorithm):
     """Test signature contents."""
-    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
-    signature = signature_fx.join("data/signature.sig").read_text("utf-8")
+    signature = write_signature(tmpdir, 10, algorithm)
+    signature = signature.join("data/signature.sig").read_text("utf-8")
 
     assert 'MIME-Version: 1.0' in signature
     assert 'Content-Type: multipart/signed; protocol="application' in signature
@@ -124,11 +124,10 @@ def test_missing_signature(sha256_signature_fx):
 
 
 @pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
-def test_header_in_manifest(request, algorithm):
+def test_header_in_manifest(tmpdir, algorithm):
     """Test header in manifest."""
-    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
-    signature = signature_fx.join("data/signature.sig").read_text("utf-8")
-    sig_tmplate = signature_fx
+    sig_tmplate = write_signature(tmpdir, 10, algorithm)
+    signature = sig_tmplate.join("data/signature.sig").read_text("utf-8")
     path = six.text_type(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
@@ -149,14 +148,13 @@ def test_header_in_manifest(request, algorithm):
     sig = smime_sign(key_path, cert_path, manifest, algorithm=algorithm)
     with signature.open('wb') as outfile:
         outfile.write(sig)
-    assert run_verify(signature_fx) == 0
+    assert run_verify(sig_tmplate) == 0
 
 
 @pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
-def test_corrupted_manifest(request, algorithm):
+def test_corrupted_manifest(tmpdir, algorithm):
     """Test corrupted manifest."""
-    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
-    sig_tmplate = signature_fx
+    sig_tmplate = write_signature(tmpdir, 10, algorithm)
     path = six.text_type(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
@@ -172,7 +170,7 @@ def test_corrupted_manifest(request, algorithm):
     with signature.open('wb') as outfile:
         outfile.write(sig)
     with pytest.raises(ManifestError):
-        run_verify(signature_fx)
+        run_verify(sig_tmplate)
 
 
 def test_missing_file_manifest(sha256_signature_fx):

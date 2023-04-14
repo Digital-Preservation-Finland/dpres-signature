@@ -7,6 +7,7 @@ from pytest import raises
 
 from dpres_signature.manifest import ManifestError
 from dpres_signature.scripts.sign_file import main, parse_arguments
+from tests.conftest import write_signature
 
 
 def test_parse_arguments():
@@ -23,15 +24,15 @@ def test_parse_arguments():
 
 
 @pytest.mark.parametrize("algorithm", ("sha1", "sha256"))
-def test_main_write(request, algorithm):
+def test_main_write(tmpdir, algorithm):
     """Test for commandline script main."""
-    signature_fx = request.getfixturevalue(f"{algorithm}_signature_fx")
+    signature = write_signature(tmpdir, 10, algorithm)
     signature_path = os.path.join(
-        six.text_type(signature_fx), 'data/signature.sig')
+        six.text_type(signature), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(signature_fx), 'keys/rsa_keypair.key')
+        six.text_type(signature), 'keys/rsa_keypair.key')
     cert_path = os.path.join(
-        six.text_type(signature_fx), 'certs/68b140ba.0')
+        six.text_type(signature), 'certs/68b140ba.0')
     os.remove(signature_path)
     main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])

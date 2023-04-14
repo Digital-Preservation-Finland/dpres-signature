@@ -14,14 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(scope="function")
-def sha1_signature_fx(tmpdir):
-    """Write fresh keypair, certificates and signatures for each test, using
-    SHA1 algorithm.
-    """
-    return write_signature(tmpdir, 10, algorithm='sha1')
-
-
-@pytest.fixture(scope="function")
 def sha256_signature_fx(tmpdir):
     """Write fresh keypair, certificates and signatures for each test, using
     SHA256 algorithm.
