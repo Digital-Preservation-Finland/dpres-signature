@@ -14,7 +14,7 @@ Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
 Summary:        Tools for creating and validating SMIME signatures.
 Group:          System Environment/Library
-License:        LGPL3+
+License:        LGPLv3+
 URL:            https://www.digitalpreservation.fi
 Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build_number}-g%{file_commit_ref}.%{file_ext}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
