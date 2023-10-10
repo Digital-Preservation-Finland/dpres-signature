@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os
 
 import pytest
-import six
 from pytest import raises
 
 from dpres_signature.scripts.verify_signed_file import main, parse_arguments
@@ -35,8 +34,8 @@ def test_main_verify(tmpdir, algorithm):
     """Test for commandline script main."""
     signature = write_signature(tmpdir, 10, algorithm)
     signature_path = os.path.join(
-        six.text_type(signature), 'data/signature.sig')
-    cert_path = os.path.join(six.text_type(signature), 'certs')
+        str(signature), 'data/signature.sig')
+    cert_path = os.path.join(str(signature), 'certs')
     main(['foo.py', '-k=%s' % cert_path, '-s=%s' % signature_path])
 
 

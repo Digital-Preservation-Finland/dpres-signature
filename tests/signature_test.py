@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os
 
 import pytest
-import six
 from M2Crypto import SMIME
 
 from dpres_signature.manifest import ManifestError
@@ -21,8 +20,8 @@ TEST_FILE_SHA256_DIGEST = (
 def run_verify(signature_fx):
     """Run the verify command"""
 
-    signature_path = six.text_type(signature_fx.join('data/signature.sig'))
-    ca_path = six.text_type(signature_fx.join('certs'))
+    signature_path = str(signature_fx.join('data/signature.sig'))
+    ca_path = str(signature_fx.join('certs'))
 
     return signature_verify(
         signature_path=signature_path,
@@ -78,7 +77,7 @@ def test_missing_ca(sha256_signature_fx):
     """Test missing CA certificate / unknown self-signed certificate on
     signature"""
 
-    os.unlink(six.text_type(sha256_signature_fx.join('certs/68b140ba.0')))
+    os.unlink(str(sha256_signature_fx.join('certs/68b140ba.0')))
     with pytest.raises(SMIME.PKCS7_Error):
         run_verify(sha256_signature_fx)
 
@@ -117,7 +116,7 @@ def test_expired_certificate(tmpdir):
 
 def test_missing_signature(sha256_signature_fx):
     """Test for missing signature."""
-    signature = six.text_type(sha256_signature_fx.join('data/signature.sig'))
+    signature = str(sha256_signature_fx.join('data/signature.sig'))
     os.remove(signature)
     with pytest.raises(IOError):
         run_verify(sha256_signature_fx)
@@ -128,7 +127,7 @@ def test_header_in_manifest(tmpdir, algorithm):
     """Test header in manifest."""
     sig_tmplate = write_signature(tmpdir, 10, algorithm)
     signature = sig_tmplate.join("data/signature.sig").read_text("utf-8")
-    path = six.text_type(sig_tmplate)
+    path = str(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
     key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
@@ -155,7 +154,7 @@ def test_header_in_manifest(tmpdir, algorithm):
 def test_corrupted_manifest(tmpdir, algorithm):
     """Test corrupted manifest."""
     sig_tmplate = write_signature(tmpdir, 10, algorithm)
-    path = six.text_type(sig_tmplate)
+    path = str(sig_tmplate)
     signature = sig_tmplate.join('data/signature.sig')
     issuer_hash = '68b140ba.0'
     key_path = os.path.join(path, 'keys', 'rsa_keypair.key')
@@ -176,8 +175,8 @@ def test_corrupted_manifest(tmpdir, algorithm):
 def test_missing_file_manifest(sha256_signature_fx):
     """Test when manifest file is missing."""
     signature = sha256_signature_fx
-    signature_path = six.text_type(signature.join('data/signature.sig'))
-    ca_path = os.path.join(six.text_type(signature), 'certs')
+    signature_path = str(signature.join('data/signature.sig'))
+    ca_path = os.path.join(str(signature), 'certs')
     with pytest.raises(ManifestError):
         signature_verify(
             signature_path=signature_path,

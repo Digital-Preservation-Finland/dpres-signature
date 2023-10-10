@@ -2,7 +2,6 @@
 import os
 
 import pytest
-import six
 from pytest import raises
 
 from dpres_signature.manifest import ManifestError
@@ -28,11 +27,11 @@ def test_main_write(tmpdir, algorithm):
     """Test for commandline script main."""
     signature = write_signature(tmpdir, 10, algorithm)
     signature_path = os.path.join(
-        six.text_type(signature), 'data/signature.sig')
+        str(signature), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(signature), 'keys/rsa_keypair.key')
+        str(signature), 'keys/rsa_keypair.key')
     cert_path = os.path.join(
-        six.text_type(signature), 'certs/68b140ba.0')
+        str(signature), 'certs/68b140ba.0')
     os.remove(signature_path)
     main(['foo.py', 'dir/test.txt', '-c=%s' % cert_path, '-k=%s' % key_path,
           '-s=%s' % signature_path])
@@ -41,11 +40,11 @@ def test_main_write(tmpdir, algorithm):
 def test_illegal_path(sha256_signature_fx):
     """Test illegal paths, prevent script escaping from signature directory."""
     signature_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'data/signature.sig')
+        str(sha256_signature_fx), 'data/signature.sig')
     key_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'keys/rsa_keypair.key')
+        str(sha256_signature_fx), 'keys/rsa_keypair.key')
     cert_path = os.path.join(
-        six.text_type(sha256_signature_fx), 'certs/68b140ba.0')
+        str(sha256_signature_fx), 'certs/68b140ba.0')
     os.remove(signature_path)
     with raises(ManifestError):
         main(

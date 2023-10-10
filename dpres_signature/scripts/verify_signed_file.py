@@ -17,8 +17,6 @@ from __future__ import print_function, unicode_literals
 import argparse
 import sys
 
-import six
-
 import dpres_signature.signature
 
 
@@ -53,7 +51,7 @@ def main(arguments=None):
             signature_path=args.signature_path,
             ca_path=args.key_path, filelist=args.files)
     except Exception as err:  # pylint: disable=broad-except
-        print(six.text_type(err), file=sys.stderr)
+        print(str(err), file=sys.stderr)
         return 117
 
 

@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import logging
 
-import six
 from M2Crypto import BIO, SMIME, SSL, X509
 
 from dpres_signature.util import (enable_insecure_sha1_crypto, ensure_binary,
@@ -24,10 +23,7 @@ def _to_str_path(path):
     :return: Byte string on Python 2, Unicode string on Python 3
     :rtype: str
     """
-    if six.PY2:
-        return ensure_binary(path)
-    else:
-        return ensure_text(path)
+    return ensure_text(path)
 
 
 def smime_sign(key_path, cert_path, message, algorithm='sha1'):
@@ -54,7 +50,7 @@ def smime_sign(key_path, cert_path, message, algorithm='sha1'):
         cert_path = _to_str_path(cert_path)
 
     # 'message' can be a byte string or a Manifest instance
-    message = six.binary_type(message)
+    message = bytes(message)
 
     smime = SMIME.SMIME()
     smime.load_key(

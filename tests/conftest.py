@@ -5,7 +5,6 @@ import logging
 import os
 
 import pytest
-import six
 
 from dpres_signature.signature import create_signature
 from dpres_signature.x509 import write_new_certificate
@@ -31,13 +30,13 @@ def write_signature(tmpdir, expiry_days=0, algorithm='sha1'):
 
     issuer_hash = '68b140ba.0'
 
-    key_path = six.text_type(tmpdir.mkdir('keys').join('rsa_keypair.key'))
-    cert_path = six.text_type(tmpdir.mkdir('certs').join(issuer_hash))
+    key_path = str(tmpdir.mkdir('keys').join('rsa_keypair.key'))
+    cert_path = str(tmpdir.mkdir('certs').join(issuer_hash))
 
     tmpdir.mkdir('data')
-    signature_path = six.text_type(tmpdir.join('data/signature.sig'))
-    signed_file_path = six.text_type(tmpdir.join('data/dir/test.txt'))
-    signed_file_dir = six.text_type(tmpdir.join('data/dir'))
+    signature_path = str(tmpdir.join('data/signature.sig'))
+    signed_file_path = str(tmpdir.join('data/dir/test.txt'))
+    signed_file_dir = str(tmpdir.join('data/dir'))
 
     write_new_certificate(
         public_key_path=key_path,

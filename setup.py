@@ -21,8 +21,7 @@ def main():
             ]
         },
         install_requires=[
-            'M2Crypto',
-            'six'
+            'M2Crypto'
         ]
     )
 
