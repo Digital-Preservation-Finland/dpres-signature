@@ -5,8 +5,7 @@ import logging
 
 from M2Crypto import BIO, SMIME, SSL, X509
 
-from dpres_signature.util import (enable_insecure_sha1_crypto, ensure_binary,
-                                  ensure_text)
+from dpres_signature.util import (enable_insecure_sha1_crypto, ensure_text)
 
 LOGGER = logging.getLogger('dpres_signature.smime')
 
