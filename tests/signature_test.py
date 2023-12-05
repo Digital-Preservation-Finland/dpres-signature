@@ -1,5 +1,4 @@
 """This is a test module for SMIME signature files verification."""
-from __future__ import unicode_literals
 
 import os
 

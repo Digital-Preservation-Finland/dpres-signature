@@ -1,5 +1,4 @@
 """Test for command line interface of signature module."""
-from __future__ import unicode_literals
 
 import os
 

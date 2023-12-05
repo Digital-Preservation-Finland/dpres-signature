@@ -1,5 +1,4 @@
 """Create and verify SMIME/X509 signed manifest files"""
-from __future__ import unicode_literals
 
 import os
 

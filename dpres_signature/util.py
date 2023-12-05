@@ -15,7 +15,7 @@ def ensure_binary(text):
     elif isinstance(text, bytes):
         return text
     else:
-        raise TypeError("Expected a (byte) string, got {}".format(type(text)))
+        raise TypeError(f"Expected a (byte) string, got {type(text)}")
 
 
 def ensure_text(text):
@@ -28,7 +28,7 @@ def ensure_text(text):
     elif isinstance(text, str):
         return text
     else:
-        raise TypeError("Expected a (byte) string, got {}".format(type(text)))
+        raise TypeError(f"Expected a (byte) string, got {type(text)}")
 
 
 # TODO: SHA1 and this function enabling it should be deprecated.

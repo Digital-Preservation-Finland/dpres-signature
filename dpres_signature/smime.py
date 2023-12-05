@@ -1,5 +1,4 @@
 """Write and verify SMIME signatures"""
-from __future__ import unicode_literals
 
 import logging
 

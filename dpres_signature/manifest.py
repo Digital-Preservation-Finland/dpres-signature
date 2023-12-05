@@ -1,5 +1,4 @@
 """Write and verify manifest files"""
-from __future__ import unicode_literals
 
 import os
 
@@ -55,7 +54,7 @@ class FileEntry:
         """Verify file checksum"""
         file_hex_digest = self.file_hex_digest()
         if self.hex_digest != file_hex_digest:
-            raise ManifestError("Checksum mismatch %s: %s != %s" % (
+            raise ManifestError("Checksum mismatch {}: {} != {}".format(
                 self.filename, self.hex_digest, file_hex_digest))
 
     def __str__(self):

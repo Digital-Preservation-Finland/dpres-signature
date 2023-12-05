@@ -1,8 +1,6 @@
 """Calculate file checksums"""
-from __future__ import unicode_literals
 
 import hashlib
-from io import open
 
 
 def _hashlib_hexdigest(path, hash_object):

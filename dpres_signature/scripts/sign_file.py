@@ -20,7 +20,6 @@ keypairs see:
     * http://www.madboa.com/geek/openssl/
 
 """
-from __future__ import unicode_literals
 
 import argparse
 import os

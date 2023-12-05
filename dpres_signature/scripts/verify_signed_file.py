@@ -12,7 +12,6 @@ that are signed. As a requirement, all signed files have to be in
 the directory or subdirectory of the signature file.
 
 """
-from __future__ import print_function, unicode_literals
 
 import argparse
 import sys
