@@ -2,13 +2,42 @@ Digital Preservation Signature
 ==============================
 This module is used for creating signed SMIME manifests and verifying existing signed manifest files.
 
-Installation
+Requirements
 ------------
 
-Installation and usage requires Python 3.6 or newer.
+Installation and usage requires Python 3.9 or newer.
+The software is tested with Python 3.9 on AlmaLinux 9 release.
+
+Installation using RPM packages (preferred)
+-------------------------------------------
+
+Installation on Linux distributions is done by using the RPM Package Manager.
+See how to `configure the PAS-jakelu RPM repositories`_ to setup necessary software sources.
+
+.. _configure the PAS-jakelu RPM repositories: https://www.digitalpreservation.fi/user_guide/installation_of_tools 
+
+After the repository has been added, the package can be installed by running the following command::
+
+    sudo dnf install python3-dpres-signature
+
+Usage
+-----
+Verify digital signature file with command ::
+
+    verify-signed-file -s <signture_path> [-k <public_key_directory>] [<manifest_file1 manifest_file2 ...>]
+
+In the arguments, a list of manifest files will verify that given files are found in the manifest in the signature file.
+If public key directory is not given, path /etc/ssl/certs is used.
+
+Create digital signature file for a list of files with command ::
+
+    sign-file -s <signature_path> -k <private_key_path> -c <cert_path> <target1 target2 ...>
+
+Installation using Python Virtualenv for development purposes
+-------------------------------------------------------------
+
 Packages openssl-devel, swig and gcc are required in your system to install M2Crypto,
 which is used in this software.
-The software is tested with Python 3.6 on Centos 7.x release.
 
 Create a virtual environment::
     
@@ -27,19 +56,6 @@ Install the required software with commands::
 
 To deactivate the virtual environment, run ``deactivate``.
 To reactivate it, run the ``source`` command above.
-
-Usage
------
-Verify digital signature file with command ::
-
-    verify-signed-file -s <signture_path> [-k <public_key_directory>] [<manifest_file1 manifest_file2 ...>]
-
-In the arguments, a list of manifest files will verify that given files are found in the manifest in the signature file.
-If public key directory is not given, path /etc/ssl/certs is used.
-
-Create digital signature file for a list of files with command ::
-
-    sign-file -s <signature_path> -k <private_key_path> -c <cert_path> <target1 target2 ...>
 
 Copyright
 ---------
