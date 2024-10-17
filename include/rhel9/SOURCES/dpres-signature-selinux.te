@@ -1,5 +1,5 @@
 
-module dpres_siptools_custom_policy 1.0;
+module dpres-signature-selinux 1.0;
 
 require {
 	type user_devpts_t;
