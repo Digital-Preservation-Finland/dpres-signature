@@ -1,3 +1,8 @@
+"""Utility functions"""
+
+from __future__ import annotations
+
+from collections.abc import Generator
 import os
 from contextlib import contextmanager
 
@@ -5,35 +10,33 @@ from contextlib import contextmanager
 ENABLE_SHA1_ENV_VAR = "OPENSSL_ENABLE_SHA1_SIGNATURES"
 
 
-def ensure_binary(text):
+def ensure_binary(text: str | bytes) -> bytes:
     """
     Encode given string to a byte string if it's Unicode or return
     it unchanged if it's a byte string
     """
     if isinstance(text, str):
         return text.encode("utf-8")
-    elif isinstance(text, bytes):
+    if isinstance(text, bytes):
         return text
-    else:
-        raise TypeError(f"Expected a (byte) string, got {type(text)}")
+    raise TypeError(f"Expected a (byte) string, got {type(text)}")
 
 
-def ensure_text(text):
+def ensure_text(text: str | bytes) -> str:
     """
     Encode given string to an Unicode string from UTF-8 if it's a byte string
     or return it unchanged if it's a byte string
     """
     if isinstance(text, bytes):
         return text.decode("utf-8")
-    elif isinstance(text, str):
+    if isinstance(text, str):
         return text
-    else:
-        raise TypeError(f"Expected a (byte) string, got {type(text)}")
+    raise TypeError(f"Expected a (byte) string, got {type(text)}")
 
 
 # TODO: SHA1 and this function enabling it should be deprecated.
 @contextmanager
-def enable_insecure_sha1_crypto():
+def enable_insecure_sha1_crypto() -> Generator[None]:
     """
     Context manager for enabling SHA1 in Fedora-based distros.
 
