@@ -27,7 +27,6 @@ def check_filelist(manifest, files):
         if name not in manifest_files:
             raise ManifestError(
                 'Required file %s missing from manifest' % name)
-    return
 
 
 def signature_verify(signature_path, ca_path='/etc/ssl/certs', filelist=None):
