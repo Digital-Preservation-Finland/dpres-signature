@@ -29,3 +29,4 @@ htmlcov/
 junit*.xml
 .tox
 venv*/
+dpres_signature/_version.py
