@@ -29,4 +29,5 @@ htmlcov/
 junit*.xml
 .tox
 venv*/
+.eggs/
 dpres_signature/_version.py
